@@ -18,7 +18,7 @@ public class DamageTextEffect : MonoBehaviour
         textComponent = textChild.AddComponent<Text>();
         textComponent.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
         textComponent.text = text;
-        textComponent.fontSize = 45;
+        textComponent.fontSize = 70;
         textComponent.fontStyle = FontStyle.Bold;
         textComponent.alignment = TextAnchor.MiddleCenter;
         textComponent.color = color;
