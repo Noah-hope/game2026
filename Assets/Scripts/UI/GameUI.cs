@@ -117,10 +117,10 @@ public class GameUI : MonoBehaviour
 
         infoPanel = CreatePanel("Info Panel", new Color(0.05f, 0.05f, 0.1f, 0.75f), new Vector2(340f, 290f));
         RectTransform panelRect = infoPanel.GetComponent<RectTransform>();
-        panelRect.anchorMin = new Vector2(0.5f, 0.5f);
-        panelRect.anchorMax = new Vector2(0.5f, 0.5f);
-        panelRect.pivot = new Vector2(0.5f, 0.5f);
-        panelRect.anchoredPosition = new Vector2(-778f, 383f);
+        panelRect.anchorMin = new Vector2(0.5f, 0f);
+        panelRect.anchorMax = new Vector2(0.5f, 0f);
+        panelRect.pivot = new Vector2(0.5f, 0f);
+        panelRect.anchoredPosition = new Vector2(0f, 12f);
         panelRect.sizeDelta = new Vector2(340f, 290f);
 
         statusText = CreateText(infoPanel.transform, "Loading...", 18, TextAnchor.UpperLeft);
