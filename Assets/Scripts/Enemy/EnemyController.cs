@@ -15,6 +15,7 @@ public class EnemyController : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     private Color baseColor;
     private bool isDead;
+    private EnemyHealthBar healthBar;
     private const float DamageInterval = 0.8f;
 
     public void Initialize(GameManager manager, EnemySpawner spawner, Transform playerTransform, string enemyName, int health, float speed, int damage, int exp, Color color, float size, Sprite sprite)
@@ -45,6 +46,9 @@ public class EnemyController : MonoBehaviour
         BoxCollider2D collider = gameObject.AddComponent<BoxCollider2D>();
         collider.isTrigger = true;
         collider.size = new Vector2(0.9f, 0.9f);
+
+        healthBar = gameObject.AddComponent<EnemyHealthBar>();
+        healthBar.Initialize(maxHealth);
     }
 
     private void FixedUpdate()
@@ -67,8 +71,12 @@ public class EnemyController : MonoBehaviour
         }
 
         currentHealth -= damage;
+        if (healthBar != null)
+        {
+            healthBar.UpdateHealth(currentHealth);
+        }
         CombatEffectFactory.CreateCircleEffect(transform.position, new Color(1f, 1f, 1f, 0.65f), 0.45f, 0.08f, 5);
-        CombatEffectFactory.CreateDamageText(transform.position + new Vector3(0f, 0.5f, 0f), damage, new Color(1f, 0.9f, 0.2f, 1f));
+        CombatEffectFactory.CreateDamageText(transform.position + new Vector3(0f, 0.5f, 0f), damage.ToString(), new Color(1f, 0.9f, 0.2f, 1f));
         StopCoroutine("HitFlash");
         StartCoroutine("HitFlash");
 

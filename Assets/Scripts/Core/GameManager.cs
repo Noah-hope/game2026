@@ -253,6 +253,9 @@ public class GameManager : MonoBehaviour
         PlayerHealth = player.AddComponent<PlayerHealth>();
         PlayerHealth.Initialize(this, PlayerStats.MaxHealth);
 
+        PlayerHealthBar healthBar = player.AddComponent<PlayerHealthBar>();
+        healthBar.Initialize(PlayerHealth);
+
         PlayerController = player.AddComponent<PlayerController>();
         PlayerController.Initialize(this, PlayerStats, PlayerHealth);
     }

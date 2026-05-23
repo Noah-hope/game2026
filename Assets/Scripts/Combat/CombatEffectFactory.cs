@@ -13,21 +13,22 @@ public static class CombatEffectFactory
         CreateEffect(position, sprite != null ? sprite : GameData.GetCircleSprite(), sprite != null ? Color.white : fallbackColor, size, lifetime, sortingOrder);
     }
 
-    public static void CreateDamageText(Vector3 position, int amount, Color color)
+    public static void CreateDamageText(Vector3 worldPosition, string text, Color color)
     {
         GameObject textObject = new GameObject("Damage Text");
-        textObject.transform.position = position;
-        textObject.transform.localScale = new Vector3(0.008f, 0.008f, 0.008f);
+        textObject.transform.position = worldPosition;
+        textObject.transform.localScale = new Vector3(0.03f, 0.03f, 0.03f);
 
         Canvas canvas = textObject.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.WorldSpace;
-        canvas.sortingOrder = 10;
+        canvas.sortingOrder = 100;
+        canvas.worldCamera = Camera.main;
 
         RectTransform rectTransform = textObject.GetComponent<RectTransform>();
-        rectTransform.sizeDelta = new Vector2(200f, 50f);
+        rectTransform.sizeDelta = new Vector2(400f, 100f);
 
         DamageTextEffect effect = textObject.AddComponent<DamageTextEffect>();
-        effect.Initialize(amount, color);
+        effect.Initialize(text, color);
     }
 
     private static void CreateEffect(Vector3 position, Sprite sprite, Color color, float size, float lifetime, int sortingOrder)

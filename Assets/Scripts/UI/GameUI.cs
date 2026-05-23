@@ -8,7 +8,11 @@ public class GameUI : MonoBehaviour
     private GameManager gameManager;
     private UpgradeManager upgradeManager;
     private Font font;
+    private Canvas gameCanvas;
+    private Sprite whiteSprite;
+    private GameObject infoPanel;
     private Text statusText;
+    private Text hpText;
     private Image hpBarBackground;
     private Image hpBarFill;
     private GameObject upgradePanel;
@@ -37,12 +41,19 @@ public class GameUI : MonoBehaviour
         }
 
         string skillText = gameManager.PlayerController.GetSkillCooldownText();
+        CharacterStats stats = gameManager.PlayerStats;
         statusText.text =
-            gameManager.PlayerStats.DisplayName + "\n" +
-            "HP: " + gameManager.PlayerHealth.CurrentHealth + " / " + gameManager.PlayerHealth.MaxHealth + "\n" +
-            "LV: " + gameManager.Level + "\n" +
-            "EXP: " + gameManager.CurrentExp + " / " + gameManager.NextLevelExp + "\n" +
+            stats.DisplayName + "\n" +
+            "LV: " + gameManager.Level + "  EXP: " + gameManager.CurrentExp + " / " + gameManager.NextLevelExp + "\n" +
+            "Move Speed: " + stats.MoveSpeed.ToString("0.0") + "\n" +
+            "Attack: " + stats.AttackDamage + "\n" +
+            "Cooldown: " + stats.AttackCooldown.ToString("0.00") + "s\n" +
             "Skill: " + skillText;
+
+        if (hpText != null)
+        {
+            hpText.text = gameManager.PlayerHealth.CurrentHealth + " / " + gameManager.PlayerHealth.MaxHealth;
+        }
 
         if (hpBarFill != null)
         {
@@ -54,7 +65,7 @@ public class GameUI : MonoBehaviour
     public void ShowUpgradePanel(List<UpgradeOption> options)
     {
         HideUpgradePanel();
-        upgradePanel = CreatePanel("Upgrade Panel", new Color(0f, 0f, 0f, 0.82f), new Vector2(620f, 430f));
+        upgradePanel = CreatePanel("Upgrade Panel", new Color(0f, 0f, 0f, 0.82f), new Vector2(640f, 480f));
 
         Text title = CreateText(upgradePanel.transform, "\u9009\u62e9\u4e00\u4e2a\u5347\u7ea7", 34, TextAnchor.MiddleCenter);
         SetRect(title.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -55f), new Vector2(500f, 60f));
@@ -63,7 +74,7 @@ public class GameUI : MonoBehaviour
         {
             UpgradeOption option = options[i];
             Button button = CreateButton(upgradePanel.transform, option.Title + "\n" + option.Description, new Color(0.18f, 0.35f, 0.62f));
-            SetRect(button.GetComponent<RectTransform>(), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -140f - i * 95f), new Vector2(520f, 76f));
+            SetRect(button.GetComponent<RectTransform>(), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -150f - i * 110f), new Vector2(540f, 88f));
             button.onClick.AddListener(delegate { upgradeManager.ApplyUpgrade(option); });
         }
     }
@@ -100,25 +111,71 @@ public class GameUI : MonoBehaviour
 
     private void BuildUI()
     {
-        Canvas canvas = CreateCanvas("Game Canvas");
-        statusText = CreateText(canvas.transform, "", 23, TextAnchor.UpperLeft);
-        SetRect(statusText.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(170f, -95f), new Vector2(320f, 170f));
+        whiteSprite = CreateWhiteSprite();
+        gameCanvas = CreateCanvas("Game Canvas");
+        Canvas.ForceUpdateCanvases();
+
+        infoPanel = CreatePanel("Info Panel", new Color(0.05f, 0.05f, 0.1f, 0.75f), new Vector2(340f, 290f));
+        RectTransform panelRect = infoPanel.GetComponent<RectTransform>();
+        panelRect.anchorMin = new Vector2(0.5f, 0f);
+        panelRect.anchorMax = new Vector2(0.5f, 0f);
+        panelRect.pivot = new Vector2(0.5f, 0f);
+        panelRect.anchoredPosition = new Vector2(0f, 12f);
+        panelRect.sizeDelta = new Vector2(340f, 290f);
+
+        statusText = CreateText(infoPanel.transform, "Loading...", 18, TextAnchor.UpperLeft);
+        statusText.color = new Color(0.95f, 0.95f, 0.95f, 1f);
+        statusText.rectTransform.anchorMin = new Vector2(0f, 1f);
+        statusText.rectTransform.anchorMax = new Vector2(0f, 1f);
+        statusText.rectTransform.pivot = new Vector2(0f, 1f);
+        statusText.rectTransform.anchoredPosition = new Vector2(12f, -10f);
+        statusText.rectTransform.sizeDelta = new Vector2(316f, 150f);
+
+        hpText = CreateText(infoPanel.transform, "HP: -- / --", 15, TextAnchor.MiddleCenter);
+        hpText.fontStyle = FontStyle.Bold;
+        hpText.color = Color.white;
+        hpText.rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
+        hpText.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+        hpText.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+        hpText.rectTransform.anchoredPosition = new Vector2(0f, -33f);
+        hpText.rectTransform.sizeDelta = new Vector2(300f, 22f);
 
         GameObject hpBgObject = new GameObject("HP Bar Background");
-        hpBgObject.transform.SetParent(canvas.transform, false);
+        hpBgObject.transform.SetParent(infoPanel.transform, false);
         hpBarBackground = hpBgObject.AddComponent<Image>();
-        hpBarBackground.color = new Color(0.2f, 0.04f, 0.04f, 0.85f);
-        SetRect(hpBarBackground.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(170f, -195f), new Vector2(300f, 16f));
+        hpBarBackground.sprite = whiteSprite;
+        hpBarBackground.color = new Color(0.15f, 0.03f, 0.03f, 0.85f);
+        RectTransform hpBgRect = hpBarBackground.rectTransform;
+        hpBgRect.anchorMin = new Vector2(0.5f, 0.5f);
+        hpBgRect.anchorMax = new Vector2(0.5f, 0.5f);
+        hpBgRect.pivot = new Vector2(0f, 1f);
+        hpBgRect.anchoredPosition = new Vector2(-150f, -55f);
+        hpBgRect.sizeDelta = new Vector2(300f, 18f);
 
         GameObject hpFillObject = new GameObject("HP Bar Fill");
         hpFillObject.transform.SetParent(hpBgObject.transform, false);
         hpBarFill = hpFillObject.AddComponent<Image>();
-        hpBarFill.color = new Color(0.88f, 0.15f, 0.15f, 0.92f);
-        hpBarFill.rectTransform.pivot = new Vector2(0f, 0.5f);
-        hpBarFill.rectTransform.anchorMin = new Vector2(0f, 0f);
-        hpBarFill.rectTransform.anchorMax = new Vector2(0f, 1f);
-        hpBarFill.rectTransform.anchoredPosition = Vector2.zero;
-        hpBarFill.rectTransform.sizeDelta = new Vector2(300f, 0f);
+        hpBarFill.sprite = whiteSprite;
+        hpBarFill.color = new Color(0.9f, 0.15f, 0.15f, 0.92f);
+        RectTransform hpFillRect = hpBarFill.rectTransform;
+        hpFillRect.pivot = new Vector2(0f, 0.5f);
+        hpFillRect.anchorMin = new Vector2(0f, 0f);
+        hpFillRect.anchorMax = new Vector2(0f, 1f);
+        hpFillRect.anchoredPosition = Vector2.zero;
+        hpFillRect.sizeDelta = new Vector2(300f, 0f);
+    }
+
+    private Sprite CreateWhiteSprite()
+    {
+        Texture2D texture = new Texture2D(4, 4);
+        Color[] pixels = new Color[16];
+        for (int i = 0; i < pixels.Length; i++)
+        {
+            pixels[i] = Color.white;
+        }
+        texture.SetPixels(pixels);
+        texture.Apply();
+        return Sprite.Create(texture, new Rect(0, 0, 4, 4), new Vector2(0.5f, 0.5f));
     }
 
     private Canvas CreateCanvas(string name)
@@ -136,9 +193,9 @@ public class GameUI : MonoBehaviour
     private GameObject CreatePanel(string name, Color color, Vector2 size)
     {
         GameObject panelObject = new GameObject(name);
-        Canvas canvas = FindObjectOfType<Canvas>();
-        panelObject.transform.SetParent(canvas.transform, false);
+        panelObject.transform.SetParent(gameCanvas.transform, false);
         Image image = panelObject.AddComponent<Image>();
+        image.sprite = whiteSprite;
         image.color = color;
         SetRect(panelObject.GetComponent<RectTransform>(), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, size);
         return panelObject;
@@ -162,11 +219,16 @@ public class GameUI : MonoBehaviour
         GameObject buttonObject = new GameObject("Button");
         buttonObject.transform.SetParent(parent, false);
         Image image = buttonObject.AddComponent<Image>();
+        image.sprite = whiteSprite;
         image.color = color;
         Button button = buttonObject.AddComponent<Button>();
 
-        Text text = CreateText(buttonObject.transform, label, 22, TextAnchor.MiddleCenter);
+        Text text = CreateText(buttonObject.transform, label, 24, TextAnchor.MiddleCenter);
         text.color = Color.white;
+        text.fontStyle = FontStyle.Bold;
+        Shadow shadow = text.gameObject.AddComponent<Shadow>();
+        shadow.effectColor = new Color(0f, 0f, 0f, 0.75f);
+        shadow.effectDistance = new Vector2(1.5f, -1.5f);
         SetRect(text.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
         return button;
     }

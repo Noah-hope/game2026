@@ -67,6 +67,10 @@ public class UpgradeManager : MonoBehaviour
         {
             stats.AttackCooldown = Mathf.Max(0.08f, stats.AttackCooldown * 0.9f);
         }
+        else if (option.Type == UpgradeType.Heal)
+        {
+            gameManager.PlayerHealth.Heal(40);
+        }
 
         if (gameUI == null)
         {
