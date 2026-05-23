@@ -68,6 +68,7 @@ public class EnemyController : MonoBehaviour
 
         currentHealth -= damage;
         CombatEffectFactory.CreateCircleEffect(transform.position, new Color(1f, 1f, 1f, 0.65f), 0.45f, 0.08f, 5);
+        CombatEffectFactory.CreateDamageText(transform.position + new Vector3(0f, 0.5f, 0f), damage, new Color(1f, 0.9f, 0.2f, 1f));
         StopCoroutine("HitFlash");
         StartCoroutine("HitFlash");
 

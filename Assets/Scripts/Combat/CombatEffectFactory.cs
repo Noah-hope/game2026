@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public static class CombatEffectFactory
 {
@@ -10,6 +11,23 @@ public static class CombatEffectFactory
     public static void CreateSpriteEffect(Vector3 position, Sprite sprite, Color fallbackColor, float size, float lifetime, int sortingOrder)
     {
         CreateEffect(position, sprite != null ? sprite : GameData.GetCircleSprite(), sprite != null ? Color.white : fallbackColor, size, lifetime, sortingOrder);
+    }
+
+    public static void CreateDamageText(Vector3 position, int amount, Color color)
+    {
+        GameObject textObject = new GameObject("Damage Text");
+        textObject.transform.position = position;
+        textObject.transform.localScale = new Vector3(0.008f, 0.008f, 0.008f);
+
+        Canvas canvas = textObject.AddComponent<Canvas>();
+        canvas.renderMode = RenderMode.WorldSpace;
+        canvas.sortingOrder = 10;
+
+        RectTransform rectTransform = textObject.GetComponent<RectTransform>();
+        rectTransform.sizeDelta = new Vector2(200f, 50f);
+
+        DamageTextEffect effect = textObject.AddComponent<DamageTextEffect>();
+        effect.Initialize(amount, color);
     }
 
     private static void CreateEffect(Vector3 position, Sprite sprite, Color color, float size, float lifetime, int sortingOrder)

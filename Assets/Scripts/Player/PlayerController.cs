@@ -61,9 +61,14 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (body == null || isDashing || gameManager == null || gameManager.IsGameOver || Time.timeScale == 0f)
+        if (body == null || gameManager == null || gameManager.IsGameOver || Time.timeScale == 0f)
         {
             StopMovement();
+            return;
+        }
+
+        if (isDashing)
+        {
             return;
         }
 
