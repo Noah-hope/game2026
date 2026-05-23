@@ -114,34 +114,37 @@ public class GameUI : MonoBehaviour
         whiteSprite = CreateWhiteSprite();
         gameCanvas = CreateCanvas("Game Canvas");
         gameCanvas.sortingOrder = 1;
+        gameCanvas.overrideSorting = true;
+
+        RectTransform canvasRect = gameCanvas.GetComponent<RectTransform>();
 
         GameObject panelObject = new GameObject("Info Panel");
-        panelObject.transform.SetParent(gameCanvas.transform, false);
+        panelObject.transform.SetParent(canvasRect, false);
         infoPanel = panelObject;
         Image panelImage = panelObject.AddComponent<Image>();
         panelImage.sprite = whiteSprite;
         panelImage.color = new Color(0.05f, 0.05f, 0.1f, 0.75f);
         RectTransform panelRect = panelObject.GetComponent<RectTransform>();
+        panelRect.anchorMin = new Vector2(0.5f, 0.5f);
+        panelRect.anchorMax = new Vector2(0.5f, 0.5f);
         panelRect.pivot = new Vector2(0f, 1f);
-        panelRect.anchorMin = new Vector2(0f, 1f);
-        panelRect.anchorMax = new Vector2(0f, 1f);
-        panelRect.anchoredPosition = new Vector2(12f, -12f);
+        panelRect.anchoredPosition = new Vector2(-948f, 528f);
         panelRect.sizeDelta = new Vector2(340f, 290f);
 
-        statusText = CreateText(panelObject.transform, "", 18, TextAnchor.UpperLeft);
+        statusText = CreateText(panelObject.transform, "Loading...", 18, TextAnchor.UpperLeft);
         statusText.color = new Color(0.95f, 0.95f, 0.95f, 1f);
-        statusText.rectTransform.pivot = new Vector2(0f, 1f);
         statusText.rectTransform.anchorMin = new Vector2(0f, 1f);
         statusText.rectTransform.anchorMax = new Vector2(0f, 1f);
+        statusText.rectTransform.pivot = new Vector2(0f, 1f);
         statusText.rectTransform.anchoredPosition = new Vector2(12f, -10f);
         statusText.rectTransform.sizeDelta = new Vector2(316f, 150f);
 
-        hpText = CreateText(panelObject.transform, "100 / 100", 15, TextAnchor.MiddleCenter);
+        hpText = CreateText(panelObject.transform, "HP: -- / --", 15, TextAnchor.MiddleCenter);
         hpText.fontStyle = FontStyle.Bold;
         hpText.color = Color.white;
-        hpText.rectTransform.pivot = new Vector2(0.5f, 0.5f);
         hpText.rectTransform.anchorMin = new Vector2(0f, 1f);
         hpText.rectTransform.anchorMax = new Vector2(0f, 1f);
+        hpText.rectTransform.pivot = new Vector2(0.5f, 0.5f);
         hpText.rectTransform.anchoredPosition = new Vector2(170f, -178f);
         hpText.rectTransform.sizeDelta = new Vector2(300f, 22f);
 
@@ -151,9 +154,9 @@ public class GameUI : MonoBehaviour
         hpBarBackground.sprite = whiteSprite;
         hpBarBackground.color = new Color(0.15f, 0.03f, 0.03f, 0.85f);
         RectTransform hpBgRect = hpBarBackground.rectTransform;
-        hpBgRect.pivot = new Vector2(0f, 1f);
         hpBgRect.anchorMin = new Vector2(0f, 1f);
         hpBgRect.anchorMax = new Vector2(0f, 1f);
+        hpBgRect.pivot = new Vector2(0f, 1f);
         hpBgRect.anchoredPosition = new Vector2(20f, -200f);
         hpBgRect.sizeDelta = new Vector2(300f, 18f);
 
