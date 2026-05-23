@@ -22,6 +22,7 @@ public static class CombatEffectFactory
         Canvas canvas = textObject.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.WorldSpace;
         canvas.sortingOrder = 100;
+        canvas.worldCamera = Camera.main;
 
         RectTransform rectTransform = textObject.GetComponent<RectTransform>();
         rectTransform.sizeDelta = new Vector2(400f, 100f);
