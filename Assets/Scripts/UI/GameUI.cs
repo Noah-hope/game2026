@@ -9,6 +9,8 @@ public class GameUI : MonoBehaviour
     private UpgradeManager upgradeManager;
     private Font font;
     private Text statusText;
+    private Image hpBarBackground;
+    private Image hpBarFill;
     private GameObject upgradePanel;
     private GameObject gameOverPanel;
 
@@ -41,6 +43,12 @@ public class GameUI : MonoBehaviour
             "LV: " + gameManager.Level + "\n" +
             "EXP: " + gameManager.CurrentExp + " / " + gameManager.NextLevelExp + "\n" +
             "Skill: " + skillText;
+
+        if (hpBarFill != null)
+        {
+            float ratio = Mathf.Clamp01((float)gameManager.PlayerHealth.CurrentHealth / gameManager.PlayerHealth.MaxHealth);
+            hpBarFill.rectTransform.sizeDelta = new Vector2(300f * ratio, 0f);
+        }
     }
 
     public void ShowUpgradePanel(List<UpgradeOption> options)
@@ -95,6 +103,22 @@ public class GameUI : MonoBehaviour
         Canvas canvas = CreateCanvas("Game Canvas");
         statusText = CreateText(canvas.transform, "", 23, TextAnchor.UpperLeft);
         SetRect(statusText.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(170f, -95f), new Vector2(320f, 170f));
+
+        GameObject hpBgObject = new GameObject("HP Bar Background");
+        hpBgObject.transform.SetParent(canvas.transform, false);
+        hpBarBackground = hpBgObject.AddComponent<Image>();
+        hpBarBackground.color = new Color(0.2f, 0.04f, 0.04f, 0.85f);
+        SetRect(hpBarBackground.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(170f, -195f), new Vector2(300f, 16f));
+
+        GameObject hpFillObject = new GameObject("HP Bar Fill");
+        hpFillObject.transform.SetParent(hpBgObject.transform, false);
+        hpBarFill = hpFillObject.AddComponent<Image>();
+        hpBarFill.color = new Color(0.88f, 0.15f, 0.15f, 0.92f);
+        hpBarFill.rectTransform.pivot = new Vector2(0f, 0.5f);
+        hpBarFill.rectTransform.anchorMin = new Vector2(0f, 0f);
+        hpBarFill.rectTransform.anchorMax = new Vector2(0f, 1f);
+        hpBarFill.rectTransform.anchoredPosition = Vector2.zero;
+        hpBarFill.rectTransform.sizeDelta = new Vector2(300f, 0f);
     }
 
     private Canvas CreateCanvas(string name)
