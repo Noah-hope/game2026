@@ -15,7 +15,7 @@ public class DamageTextEffect : MonoBehaviour
         Text textComp = textChild.AddComponent<Text>();
         textComp.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
         textComp.text = text;
-        textComp.fontSize = 80;
+        textComp.fontSize = 200;
         textComp.fontStyle = FontStyle.Bold;
         textComp.alignment = TextAnchor.MiddleCenter;
         textComp.color = color;
@@ -26,10 +26,10 @@ public class DamageTextEffect : MonoBehaviour
         outline.effectDistance = new Vector2(2f, -2f);
 
         RectTransform textRect = textChild.GetComponent<RectTransform>();
-        textRect.sizeDelta = new Vector2(150f, 60f);
+        textRect.sizeDelta = new Vector2(400f, 100f);
 
         RectTransform canvasRect = GetComponent<RectTransform>();
-        canvasRect.sizeDelta = new Vector2(150f, 60f);
+        canvasRect.sizeDelta = new Vector2(400f, 100f);
     }
 
     private void Update()

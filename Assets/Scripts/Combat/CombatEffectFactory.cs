@@ -17,14 +17,14 @@ public static class CombatEffectFactory
     {
         GameObject textObject = new GameObject("Damage Text");
         textObject.transform.position = worldPosition;
-        textObject.transform.localScale = new Vector3(0.01f, 0.01f, 0.01f);
+        textObject.transform.localScale = new Vector3(0.03f, 0.03f, 0.03f);
 
         Canvas canvas = textObject.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.WorldSpace;
-        canvas.sortingOrder = 5;
+        canvas.sortingOrder = 100;
 
         RectTransform rectTransform = textObject.GetComponent<RectTransform>();
-        rectTransform.sizeDelta = new Vector2(150f, 60f);
+        rectTransform.sizeDelta = new Vector2(400f, 100f);
 
         DamageTextEffect effect = textObject.AddComponent<DamageTextEffect>();
         effect.Initialize(text, color);
