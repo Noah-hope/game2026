@@ -39,7 +39,7 @@ public class PlayerHealth : MonoBehaviour
 
         CurrentHealth = Mathf.Max(0, CurrentHealth - damage);
         CombatEffectFactory.CreateCircleEffect(transform.position, new Color(1f, 0.2f, 0.2f, 0.55f), 0.8f, 0.1f, 6);
-        CombatEffectFactory.CreateDamageText(transform.position + new Vector3(0f, 0.8f, 0f), damage, new Color(1f, 0.25f, 0.25f, 1f));
+        CombatEffectFactory.CreateDamageText(transform.position + new Vector3(0f, 0.8f, 0f), "-" + damage, new Color(1f, 0.25f, 0.25f, 1f));
         StopCoroutine("HitFlash");
         StartCoroutine("HitFlash");
         gameManager.RefreshUI();

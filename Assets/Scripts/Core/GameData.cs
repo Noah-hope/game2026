@@ -195,7 +195,8 @@ public static class GameData
             new UpgradeOption("\u6280\u80fd\u4f24\u5bb3 +5", "Skill Damage +5", UpgradeType.SkillDamage),
             new UpgradeOption("\u6700\u5927\u751f\u547d +20", "Max HP +20 and heal 20 HP", UpgradeType.MaxHealth),
             new UpgradeOption("\u79fb\u52a8\u901f\u5ea6 +10%", "Move Speed +10%", UpgradeType.MoveSpeed),
-            new UpgradeOption("\u666e\u653b\u51b7\u5374 -10%", "Attack Cooldown -10%", UpgradeType.AttackCooldown)
+            new UpgradeOption("\u666e\u653b\u51b7\u5374 -10%", "Attack Cooldown -10%", UpgradeType.AttackCooldown),
+            new UpgradeOption("\u751f\u547d\u6062\u590d +40", "Heal 40 HP instantly", UpgradeType.Heal)
         };
     }
 }

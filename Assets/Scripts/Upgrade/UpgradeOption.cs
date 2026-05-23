@@ -4,7 +4,8 @@ public enum UpgradeType
     SkillDamage,
     MaxHealth,
     MoveSpeed,
-    AttackCooldown
+    AttackCooldown,
+    Heal
 }
 
 public class UpgradeOption

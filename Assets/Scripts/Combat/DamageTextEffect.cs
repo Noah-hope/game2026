@@ -10,14 +10,14 @@ public class DamageTextEffect : MonoBehaviour
     private Color startColor;
     private CanvasGroup canvasGroup;
 
-    public void Initialize(int damage, Color color)
+    public void Initialize(string text, Color color)
     {
         GameObject textChild = new GameObject("Text");
         textChild.transform.SetParent(transform, false);
 
         textComponent = textChild.AddComponent<Text>();
         textComponent.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-        textComponent.text = damage.ToString();
+        textComponent.text = text;
         textComponent.fontSize = 45;
         textComponent.fontStyle = FontStyle.Bold;
         textComponent.alignment = TextAnchor.MiddleCenter;

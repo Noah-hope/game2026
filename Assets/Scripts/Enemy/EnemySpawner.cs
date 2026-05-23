@@ -63,11 +63,11 @@ public class EnemySpawner : MonoBehaviour
 
         if (spawnBat)
         {
-            enemy.Initialize(gameManager, this, player, "Bat", 30, 4f, 8, 12, new Color(0.6f, 0.18f, 0.9f), 0.55f, GameData.GetEnemySprite("Bat"));
+            enemy.Initialize(gameManager, this, player, "Bat", 30, 4f, 8, 12, new Color(0.6f, 0.18f, 0.9f), 0.85f, GameData.GetEnemySprite("Bat"));
         }
         else
         {
-            enemy.Initialize(gameManager, this, player, "Slime", 50, 2.5f, 10, 10, new Color(0.1f, 0.85f, 0.25f), 0.75f, GameData.GetEnemySprite("Slime"));
+            enemy.Initialize(gameManager, this, player, "Slime", 110, 2.5f, 10, 10, new Color(0.1f, 0.85f, 0.25f), 0.75f, GameData.GetEnemySprite("Slime"));
         }
 
         RegisterEnemy();
