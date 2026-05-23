@@ -120,7 +120,7 @@ public class GameUI : MonoBehaviour
         panelRect.anchorMin = new Vector2(0.5f, 0.5f);
         panelRect.anchorMax = new Vector2(0.5f, 0.5f);
         panelRect.pivot = new Vector2(0.5f, 0.5f);
-        panelRect.anchoredPosition = new Vector2(-778f, 383f);
+        panelRect.anchoredPosition = new Vector2(-600f, 100f);
         panelRect.sizeDelta = new Vector2(340f, 290f);
 
         statusText = CreateText(infoPanel.transform, "Loading...", 18, TextAnchor.UpperLeft);
