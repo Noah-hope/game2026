@@ -4,7 +4,7 @@ using UnityEngine.UI;
 public class DamageTextEffect : MonoBehaviour
 {
     private float speed = 1.6f;
-    private float lifetime = 0.7f;
+    private float lifetime = 10f;
     private float elapsed;
 
     public void Initialize(string text, Color color)
