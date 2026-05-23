@@ -120,40 +120,54 @@ public class GameUI : MonoBehaviour
         infoPanel = panelObject;
         Image panelImage = panelObject.AddComponent<Image>();
         panelImage.sprite = whiteSprite;
-        panelImage.color = new Color(0f, 0f, 0f, 0.65f);
+        panelImage.color = new Color(0.05f, 0.05f, 0.1f, 0.75f);
         RectTransform panelRect = panelObject.GetComponent<RectTransform>();
         panelRect.pivot = new Vector2(0f, 1f);
-        SetRect(panelRect, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(10f, -10f), new Vector2(330f, 280f));
+        panelRect.anchorMin = new Vector2(0f, 1f);
+        panelRect.anchorMax = new Vector2(0f, 1f);
+        panelRect.anchoredPosition = new Vector2(12f, -12f);
+        panelRect.sizeDelta = new Vector2(340f, 290f);
 
-        statusText = CreateText(panelObject.transform, "", 19, TextAnchor.UpperLeft);
-        statusText.color = new Color(0.9f, 0.9f, 0.9f, 1f);
+        statusText = CreateText(panelObject.transform, "", 18, TextAnchor.UpperLeft);
+        statusText.color = new Color(0.95f, 0.95f, 0.95f, 1f);
         statusText.rectTransform.pivot = new Vector2(0f, 1f);
-        SetRect(statusText.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(10f, -10f), new Vector2(310f, 150f));
+        statusText.rectTransform.anchorMin = new Vector2(0f, 1f);
+        statusText.rectTransform.anchorMax = new Vector2(0f, 1f);
+        statusText.rectTransform.anchoredPosition = new Vector2(12f, -10f);
+        statusText.rectTransform.sizeDelta = new Vector2(316f, 150f);
 
-        hpText = CreateText(panelObject.transform, "", 14, TextAnchor.MiddleCenter);
+        hpText = CreateText(panelObject.transform, "100 / 100", 15, TextAnchor.MiddleCenter);
         hpText.fontStyle = FontStyle.Bold;
         hpText.color = Color.white;
         hpText.rectTransform.pivot = new Vector2(0.5f, 0.5f);
-        SetRect(hpText.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(165f, -175f), new Vector2(300f, 20f));
+        hpText.rectTransform.anchorMin = new Vector2(0f, 1f);
+        hpText.rectTransform.anchorMax = new Vector2(0f, 1f);
+        hpText.rectTransform.anchoredPosition = new Vector2(170f, -178f);
+        hpText.rectTransform.sizeDelta = new Vector2(300f, 22f);
 
         GameObject hpBgObject = new GameObject("HP Bar Background");
         hpBgObject.transform.SetParent(panelObject.transform, false);
         hpBarBackground = hpBgObject.AddComponent<Image>();
         hpBarBackground.sprite = whiteSprite;
-        hpBarBackground.color = new Color(0.2f, 0.04f, 0.04f, 0.85f);
-        hpBarBackground.rectTransform.pivot = new Vector2(0f, 1f);
-        SetRect(hpBarBackground.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(15f, -195f), new Vector2(300f, 16f));
+        hpBarBackground.color = new Color(0.15f, 0.03f, 0.03f, 0.85f);
+        RectTransform hpBgRect = hpBarBackground.rectTransform;
+        hpBgRect.pivot = new Vector2(0f, 1f);
+        hpBgRect.anchorMin = new Vector2(0f, 1f);
+        hpBgRect.anchorMax = new Vector2(0f, 1f);
+        hpBgRect.anchoredPosition = new Vector2(20f, -200f);
+        hpBgRect.sizeDelta = new Vector2(300f, 18f);
 
         GameObject hpFillObject = new GameObject("HP Bar Fill");
         hpFillObject.transform.SetParent(hpBgObject.transform, false);
         hpBarFill = hpFillObject.AddComponent<Image>();
         hpBarFill.sprite = whiteSprite;
-        hpBarFill.color = new Color(0.88f, 0.15f, 0.15f, 0.92f);
-        hpBarFill.rectTransform.pivot = new Vector2(0f, 0.5f);
-        hpBarFill.rectTransform.anchorMin = new Vector2(0f, 0f);
-        hpBarFill.rectTransform.anchorMax = new Vector2(0f, 1f);
-        hpBarFill.rectTransform.anchoredPosition = Vector2.zero;
-        hpBarFill.rectTransform.sizeDelta = new Vector2(300f, 0f);
+        hpBarFill.color = new Color(0.9f, 0.15f, 0.15f, 0.92f);
+        RectTransform hpFillRect = hpBarFill.rectTransform;
+        hpFillRect.pivot = new Vector2(0f, 0.5f);
+        hpFillRect.anchorMin = new Vector2(0f, 0f);
+        hpFillRect.anchorMax = new Vector2(0f, 1f);
+        hpFillRect.anchoredPosition = Vector2.zero;
+        hpFillRect.sizeDelta = new Vector2(300f, 0f);
     }
 
     private Sprite CreateWhiteSprite()
