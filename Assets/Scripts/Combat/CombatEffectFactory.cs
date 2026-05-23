@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.UI;
 
 public static class CombatEffectFactory
 {
@@ -17,17 +16,12 @@ public static class CombatEffectFactory
     {
         GameObject textObject = new GameObject("Damage Text");
         textObject.transform.position = worldPosition;
-        textObject.transform.localScale = new Vector3(0.03f, 0.03f, 0.03f);
 
-        Canvas canvas = textObject.AddComponent<Canvas>();
-        canvas.renderMode = RenderMode.WorldSpace;
-        canvas.sortingOrder = 100;
-        canvas.worldCamera = Camera.main;
-
-        RectTransform rectTransform = textObject.GetComponent<RectTransform>();
-        rectTransform.sizeDelta = new Vector2(400f, 100f);
+        float baseScale = 0.0125f;
+        textObject.transform.localScale = new Vector3(baseScale, baseScale, baseScale);
 
         DamageTextEffect effect = textObject.AddComponent<DamageTextEffect>();
+        effect.BaseScale = baseScale;
         effect.Initialize(text, color);
     }
 

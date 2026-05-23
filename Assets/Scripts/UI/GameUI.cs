@@ -41,14 +41,18 @@ public class GameUI : MonoBehaviour
         }
 
         string skillText = gameManager.PlayerController.GetSkillCooldownText();
+        string atkCdText = gameManager.PlayerController.GetAttackCooldownText();
         CharacterStats stats = gameManager.PlayerStats;
+        string skillDisplay = skillText == "Ready" ? "技能: 就绪" : "技能: " + skillText;
+        string atkCdDisplay = atkCdText == "就绪" ? "普攻冷却: 就绪" : "普攻冷却: " + atkCdText;
         statusText.text =
             stats.DisplayName + "\n" +
-            "LV: " + gameManager.Level + "  EXP: " + gameManager.CurrentExp + " / " + gameManager.NextLevelExp + "\n" +
-            "Move Speed: " + stats.MoveSpeed.ToString("0.0") + "\n" +
-            "Attack: " + stats.AttackDamage + "\n" +
-            "Cooldown: " + stats.AttackCooldown.ToString("0.00") + "s\n" +
-            "Skill: " + skillText;
+            "Lv." + gameManager.Level + "    EXP " + gameManager.CurrentExp + " / " + gameManager.NextLevelExp + "\n" +
+            "血量: " + gameManager.PlayerHealth.CurrentHealth + " / " + gameManager.PlayerHealth.MaxHealth + "\n" +
+            "普攻伤害: " + stats.AttackDamage + "\n" +
+            atkCdDisplay + "\n" +
+            "速度: " + stats.MoveSpeed.ToString("0.0") + "\n" +
+            skillDisplay;
 
         if (hpText != null)
         {
@@ -115,21 +119,21 @@ public class GameUI : MonoBehaviour
         gameCanvas = CreateCanvas("Game Canvas");
         Canvas.ForceUpdateCanvases();
 
-        infoPanel = CreatePanel("Info Panel", new Color(0.05f, 0.05f, 0.1f, 0.75f), new Vector2(340f, 290f));
+        infoPanel = CreatePanel("Info Panel", new Color(0.05f, 0.05f, 0.1f, 0.75f), new Vector2(400f, 290f));
         RectTransform panelRect = infoPanel.GetComponent<RectTransform>();
         panelRect.anchorMin = new Vector2(0.5f, 0f);
         panelRect.anchorMax = new Vector2(0.5f, 0f);
         panelRect.pivot = new Vector2(0.5f, 0f);
         panelRect.anchoredPosition = new Vector2(0f, 12f);
-        panelRect.sizeDelta = new Vector2(340f, 290f);
+        panelRect.sizeDelta = new Vector2(400f, 290f);
 
-        statusText = CreateText(infoPanel.transform, "Loading...", 18, TextAnchor.UpperLeft);
+        statusText = CreateText(infoPanel.transform, "Loading...", 17, TextAnchor.UpperLeft);
         statusText.color = new Color(0.95f, 0.95f, 0.95f, 1f);
         statusText.rectTransform.anchorMin = new Vector2(0f, 1f);
         statusText.rectTransform.anchorMax = new Vector2(0f, 1f);
         statusText.rectTransform.pivot = new Vector2(0f, 1f);
         statusText.rectTransform.anchoredPosition = new Vector2(12f, -10f);
-        statusText.rectTransform.sizeDelta = new Vector2(316f, 150f);
+        statusText.rectTransform.sizeDelta = new Vector2(376f, 150f);
 
         hpText = CreateText(infoPanel.transform, "HP: -- / --", 15, TextAnchor.MiddleCenter);
         hpText.fontStyle = FontStyle.Bold;
@@ -186,6 +190,8 @@ public class GameUI : MonoBehaviour
         CanvasScaler scaler = canvasObject.AddComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1920f, 1080f);
+        scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+        scaler.matchWidthOrHeight = 0.5f;
         canvasObject.AddComponent<GraphicRaycaster>();
         return canvas;
     }

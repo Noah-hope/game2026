@@ -89,6 +89,17 @@ public class PlayerController : MonoBehaviour
         return remaining.ToString("0.0") + "s";
     }
 
+    public string GetAttackCooldownText()
+    {
+        float remaining = nextAttackTime - Time.time;
+        if (remaining <= 0f)
+        {
+            return "就绪";
+        }
+
+        return remaining.ToString("0.0") + "s";
+    }
+
     public void LockControls()
     {
         controlsLocked = true;
