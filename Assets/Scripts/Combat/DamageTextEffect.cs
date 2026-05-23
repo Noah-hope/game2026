@@ -18,10 +18,15 @@ public class DamageTextEffect : MonoBehaviour
         textComponent = textChild.AddComponent<Text>();
         textComponent.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
         textComponent.text = damage.ToString();
-        textComponent.fontSize = 30;
+        textComponent.fontSize = 45;
+        textComponent.fontStyle = FontStyle.Bold;
         textComponent.alignment = TextAnchor.MiddleCenter;
         textComponent.color = color;
         textComponent.raycastTarget = false;
+
+        Outline outline = textChild.AddComponent<Outline>();
+        outline.effectColor = new Color(0f, 0f, 0f, 0.9f);
+        outline.effectDistance = new Vector2(2f, -2f);
 
         RectTransform textRect = textChild.GetComponent<RectTransform>();
         textRect.sizeDelta = new Vector2(200f, 50f);

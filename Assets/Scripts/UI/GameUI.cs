@@ -8,6 +8,7 @@ public class GameUI : MonoBehaviour
     private GameManager gameManager;
     private UpgradeManager upgradeManager;
     private Font font;
+    private Canvas gameCanvas;
     private Text statusText;
     private Image hpBarBackground;
     private Image hpBarFill;
@@ -54,7 +55,7 @@ public class GameUI : MonoBehaviour
     public void ShowUpgradePanel(List<UpgradeOption> options)
     {
         HideUpgradePanel();
-        upgradePanel = CreatePanel("Upgrade Panel", new Color(0f, 0f, 0f, 0.82f), new Vector2(620f, 430f));
+        upgradePanel = CreatePanel("Upgrade Panel", new Color(0f, 0f, 0f, 0.82f), new Vector2(640f, 480f));
 
         Text title = CreateText(upgradePanel.transform, "\u9009\u62e9\u4e00\u4e2a\u5347\u7ea7", 34, TextAnchor.MiddleCenter);
         SetRect(title.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -55f), new Vector2(500f, 60f));
@@ -63,7 +64,7 @@ public class GameUI : MonoBehaviour
         {
             UpgradeOption option = options[i];
             Button button = CreateButton(upgradePanel.transform, option.Title + "\n" + option.Description, new Color(0.18f, 0.35f, 0.62f));
-            SetRect(button.GetComponent<RectTransform>(), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -140f - i * 95f), new Vector2(520f, 76f));
+            SetRect(button.GetComponent<RectTransform>(), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -150f - i * 110f), new Vector2(540f, 88f));
             button.onClick.AddListener(delegate { upgradeManager.ApplyUpgrade(option); });
         }
     }
@@ -100,12 +101,12 @@ public class GameUI : MonoBehaviour
 
     private void BuildUI()
     {
-        Canvas canvas = CreateCanvas("Game Canvas");
-        statusText = CreateText(canvas.transform, "", 23, TextAnchor.UpperLeft);
+        gameCanvas = CreateCanvas("Game Canvas");
+        statusText = CreateText(gameCanvas.transform, "", 23, TextAnchor.UpperLeft);
         SetRect(statusText.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(170f, -95f), new Vector2(320f, 170f));
 
         GameObject hpBgObject = new GameObject("HP Bar Background");
-        hpBgObject.transform.SetParent(canvas.transform, false);
+        hpBgObject.transform.SetParent(gameCanvas.transform, false);
         hpBarBackground = hpBgObject.AddComponent<Image>();
         hpBarBackground.color = new Color(0.2f, 0.04f, 0.04f, 0.85f);
         SetRect(hpBarBackground.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(170f, -195f), new Vector2(300f, 16f));
@@ -136,8 +137,7 @@ public class GameUI : MonoBehaviour
     private GameObject CreatePanel(string name, Color color, Vector2 size)
     {
         GameObject panelObject = new GameObject(name);
-        Canvas canvas = FindObjectOfType<Canvas>();
-        panelObject.transform.SetParent(canvas.transform, false);
+        panelObject.transform.SetParent(gameCanvas.transform, false);
         Image image = panelObject.AddComponent<Image>();
         image.color = color;
         SetRect(panelObject.GetComponent<RectTransform>(), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, size);
@@ -165,8 +165,12 @@ public class GameUI : MonoBehaviour
         image.color = color;
         Button button = buttonObject.AddComponent<Button>();
 
-        Text text = CreateText(buttonObject.transform, label, 22, TextAnchor.MiddleCenter);
+        Text text = CreateText(buttonObject.transform, label, 24, TextAnchor.MiddleCenter);
         text.color = Color.white;
+        text.fontStyle = FontStyle.Bold;
+        Shadow shadow = text.gameObject.AddComponent<Shadow>();
+        shadow.effectColor = new Color(0f, 0f, 0f, 0.75f);
+        shadow.effectDistance = new Vector2(1.5f, -1.5f);
         SetRect(text.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
         return button;
     }

@@ -17,7 +17,7 @@ public static class CombatEffectFactory
     {
         GameObject textObject = new GameObject("Damage Text");
         textObject.transform.position = position;
-        textObject.transform.localScale = new Vector3(0.008f, 0.008f, 0.008f);
+        textObject.transform.localScale = new Vector3(0.016f, 0.016f, 0.016f);
 
         Canvas canvas = textObject.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.WorldSpace;
