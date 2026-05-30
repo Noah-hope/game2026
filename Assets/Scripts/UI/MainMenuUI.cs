@@ -29,7 +29,7 @@ public class MainMenuUI : MonoBehaviour
         AddTextShadow(title, 0.9f);
         SetRect(title.rectTransform, new Vector2(0.5f, 0.75f), new Vector2(0.5f, 0.75f), Vector2.zero, new Vector2(820f, 86f));
 
-        Text subtitle = CreateText(canvas.transform, "\u751f\u5b58 60 \u79d2\uff0c\u9009\u62e9\u5f3a\u5316\uff0c\u51fb\u9000\u654c\u7fa4", 22, TextAnchor.MiddleCenter);
+        Text subtitle = CreateText(canvas.transform, "4 \u6ce2\u6b21\u6e05\u602a\uff0c\u5347\u7ea7\u6784\u7b51\uff0c\u51fb\u8d25 Boss", 22, TextAnchor.MiddleCenter);
         subtitle.color = new Color(0.75f, 0.80f, 0.9f);
         SetRect(subtitle.rectTransform, new Vector2(0.5f, 0.66f), new Vector2(0.5f, 0.66f), Vector2.zero, new Vector2(760f, 40f));
 
@@ -62,7 +62,8 @@ public class MainMenuUI : MonoBehaviour
             "E  \u91ca\u653e\u6280\u80fd",
             "\u51fb\u6740\u654c\u4eba\u83b7\u5f97\u7ecf\u9a8c",
             "\u5347\u7ea7\u65f6\u9009\u62e9\u4e00\u4e2a\u5f3a\u5316",
-            "\u575a\u6301 60 \u79d2\u5373\u53ef\u80dc\u5229"
+            "\u6e05\u5b8c\u6bcf\u6ce2\u654c\u4eba\u540e\u664b\u7ea7",
+            "\u7b2c4\u6ce2\u6e05\u573a\u540e\u51fb\u8d25 Boss \u80dc\u5229"
         };
 
         for (int i = 0; i < instructions.Length; i++)
