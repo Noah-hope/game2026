@@ -27,7 +27,7 @@ public class GameUI : MonoBehaviour
     private Text skillCooldownText;
     private Text skillDamageText;
     private Image skillCooldownOverlay;
-    private Text timerText;
+    private Text waveText;
     private Text dangerText;
     private Text killsText;
     private Button invincibleButton;
@@ -83,10 +83,17 @@ public class GameUI : MonoBehaviour
         int totalSeconds = Mathf.FloorToInt(gameManager.SurvivalTime);
         int minutes = totalSeconds / 60;
         int seconds = totalSeconds % 60;
-        int targetSeconds = Mathf.FloorToInt(gameManager.SurvivalTarget);
-        int targetMin = targetSeconds / 60;
-        int targetSec = targetSeconds % 60;
-        timerText.text = string.Format("\u65f6\u95f4  {0:00}:{1:00} / {2:00}:{3:00}", minutes, seconds, targetMin, targetSec);
+
+        if (gameManager.IsBossWave)
+        {
+            waveText.text = "\u7ec8\u6781\u5bf9\u51b3!";
+            waveText.color = Mathf.Sin(Time.unscaledTime * 6f) > 0f ? new Color(1f, 0.25f, 0.2f) : new Color(1f, 0.85f, 0.2f);
+        }
+        else
+        {
+            waveText.text = "\u6ce2\u6b21  " + gameManager.CurrentWave + " / " + GameManager.TotalWaves;
+            waveText.color = new Color(0.95f, 0.85f, 0.35f);
+        }
         killsText.text = "\u51fb\u6740  " + gameManager.KillCount;
 
         int diff = gameManager.DifficultyLevel;
@@ -226,10 +233,10 @@ public class GameUI : MonoBehaviour
         killsText.color = new Color(0.9f, 0.85f, 0.5f);
         SetRect(killsText.rectTransform, new Vector2(0.13f, 0.5f), new Vector2(0.13f, 0.5f), Vector2.zero, new Vector2(150f, 30f));
 
-        timerText = CreateText(topStatusPanel.transform, "\u65f6\u95f4 00:00 / 01:00", 22, TextAnchor.MiddleCenter);
-        timerText.fontStyle = FontStyle.Bold;
-        timerText.color = new Color(0.95f, 0.85f, 0.35f);
-        SetRect(timerText.rectTransform, new Vector2(0.39f, 0.5f), new Vector2(0.39f, 0.5f), Vector2.zero, new Vector2(270f, 34f));
+        waveText = CreateText(topStatusPanel.transform, "\u6ce2\u6b21  1 / 4", 22, TextAnchor.MiddleCenter);
+        waveText.fontStyle = FontStyle.Bold;
+        waveText.color = new Color(0.95f, 0.85f, 0.35f);
+        SetRect(waveText.rectTransform, new Vector2(0.39f, 0.5f), new Vector2(0.39f, 0.5f), Vector2.zero, new Vector2(270f, 34f));
 
         dangerText = CreateText(topStatusPanel.transform, "\u5371\u9669 Lv.0", 18, TextAnchor.MiddleCenter);
         dangerText.fontStyle = FontStyle.Bold;
@@ -474,7 +481,7 @@ public class GameUI : MonoBehaviour
 
         CreateResultLine(parent, string.Format("\u751f\u5b58\u65f6\u95f4  {0:00}:{1:00}", minutes, seconds), 0.68f, new Color(0.86f, 0.91f, 1f));
         CreateResultLine(parent, string.Format("\u51fb\u6740\u6570  {0}      \u7b49\u7ea7  Lv.{1}", gameManager.KillCount, gameManager.Level), 0.57f, new Color(0.86f, 0.91f, 1f));
-        CreateResultLine(parent, string.Format("\u5371\u9669\u7b49\u7ea7  Lv.{0}", diff), 0.46f, diff >= 3 ? new Color(1f, 0.35f, 0.2f) : new Color(1f, 0.7f, 0.2f));
+        CreateResultLine(parent, string.Format("\u901a\u5173\u6ce2\u6b21  Wave {0} / {1}", victory ? GameManager.TotalWaves : Mathf.Min(gameManager.CurrentWave, GameManager.TotalWaves - 1), GameManager.TotalWaves), 0.46f, diff >= 3 ? new Color(1f, 0.35f, 0.2f) : new Color(1f, 0.7f, 0.2f));
 
         Text rating = CreateText(parent, "\u8bc4\u4ef7  " + GetResultRating(victory), 22, TextAnchor.MiddleCenter);
         rating.color = titleColor;
@@ -730,9 +737,10 @@ public class GameUI : MonoBehaviour
             return "\u6210\u529f\u751f\u8fd8";
         }
 
-        float progress = gameManager.SurvivalTarget > 0f ? gameManager.SurvivalTime / gameManager.SurvivalTarget : 0f;
-        if (progress >= 0.75f) return "\u5dee\u4e00\u70b9";
-        if (progress >= 0.45f) return "\u7ad9\u7a33\u811a\u8ddf";
+        int reachedWave = Mathf.Min(gameManager.CurrentWave, GameManager.TotalWaves - 1);
+        if (reachedWave >= 3 && gameManager.IsBossWave) return "\u5dee\u4e00\u70b9";
+        if (reachedWave >= 3) return "\u7ad9\u7a33\u811a\u8ddf";
+        if (reachedWave >= 2) return "\u7ee7\u7eed\u52aa\u529b";
         return "\u518d\u6765\u4e00\u5c40";
     }
 

@@ -1,6 +1,6 @@
 # Dungeon Survival / 地下城生存
 
-Unity 2D 俯视角生存动作小游戏。选择法师或战士，在 **60 秒**内击败不断涌来的敌人、通过升级选择构筑你的英雄、应对逐渐攀升的危险等级，活到最后获得胜利。
+Unity 2D 俯视角 Roguelite 生存动作游戏。选择法师或战士，通过 **4 波次清怪 + Boss 战** 的通关制，在升级构筑中不断成长，击败恐惧领主获得胜利。
 
 ---
 
@@ -9,7 +9,7 @@ Unity 2D 俯视角生存动作小游戏。选择法师或战士，在 **60 秒**
 | 按键 | 功能 |
 |------|------|
 | WASD / 方向键 | 移动 |
-| 鼠标左键 | 普攻 |
+| 鼠标左键 | 普攻（按住连发） |
 | E | 释放角色技能 |
 | ESC | 暂停 |
 
@@ -18,75 +18,60 @@ Unity 2D 俯视角生存动作小游戏。选择法师或战士，在 **60 秒**
 ## 角色介绍
 
 ### 法师 Mage
-- **定位：** 远程 / 范围控制
-- **普攻：** 火球 Fireball
-- **技能：** Arcane Rain — 在鼠标位置生成紫色法阵，范围内敌人持续受伤害并减速
-- **专属升级：** 火球分裂、奥术雨范围/持续/频率增强、冰霜力场减速、法力涌动冷却缩减
+- **定位**: 远程/范围控制
+- **HP**: 80 | **移速**: 5.0
+- **普攻**: 火球术 (Fireball) — 伤害 20，冷却 0.4s，弹速 10
+- **技能**: 奥术雨 (Arcane Rain) — 鼠标位置生成法阵，范围持续伤害 10/跳并减速 25%
+- **专属升级**: 火球分裂、奥术雨扩大/延长/加速、霜冻法阵、魔力涌动
 
 ### 战士 Warrior
-- **定位：** 近战 / 冲刺爆发
-- **普攻：** 剑气 Sword Wave
-- **技能：** Dash Slash — 向鼠标方向冲刺斩击，击退路径上的敌人，带残影和刀光特效
-- **专属升级：** 剑气穿透/增大、冲刺回血/冷却、地裂爆炸、战斗狂怒
+- **定位**: 近战/冲刺爆发
+- **HP**: 140 | **移速**: 4.0
+- **普攻**: 剑气斩 (Sword Wave) — 伤害 30，冷却 0.6s，弹速 8
+- **技能**: 突进斩 (Dash Slash) — 鼠标方向高速冲刺，路径伤害 55
+- **专属升级**: 剑气穿透/扩大、突进回血/冷却、大地裂斩、战斗狂热
 
 ---
 
-## 核心功能
+## 核心玩法
 
-- **60 秒生存目标** — 存活满 60 秒即胜利
-- **HUD** — 实时显示 Time / Danger Lv / Kills / HP / EXP / 技能冷却
-- **难度动态提升** — Danger Lv 0→3 随生存时间自动升级，敌人更强更密
-- **精英怪** — 30 秒后出现，体型更大、属性更强、经验双倍
-- **远程射手** — 15 秒后出现，保持距离射击玩家
-- **角色专属升级** — 每次升级三选一卡牌，Mage/Warrior 各有特色构筑路线
-- **升级卡牌** — 横向三选一，按类型 (Common/Mage/Warrior/Rare) 不同颜色边框
-- **暂停菜单** — ESC 暂停，支持继续/重新开始/返回主菜单
-- **结算评价** — Game Over 或 Victory 后显示生存时间、击杀数、等级、危险等级和本局评价
-- **Camera Shake** — 战士冲刺时的震屏反馈
-
----
-
-## 项目结构
-
-```
-Assets/Scripts/
-├── Core/          游戏主流程、数据、场景加载
-│   ├── GameManager.cs
-│   ├── GameData.cs
-│   ├── CharacterStats.cs
-│   ├── GameUtility.cs
-│   └── SceneLoader.cs
-├── Player/        玩家控制、血量
-│   ├── PlayerController.cs
-│   ├── PlayerHealth.cs
-│   └── PlayerHealthBar.cs
-├── Enemy/         敌人、刷怪、远程怪
-│   ├── EnemyController.cs
-│   ├── EnemySpawner.cs
-│   └── EnemyHealthBar.cs
-├── Combat/        投射物、技能区域、特效
-│   ├── Projectile.cs
-│   ├── ArcaneRainArea.cs
-│   ├── CombatEffectFactory.cs
-│   ├── DamageTextEffect.cs
-│   └── TemporaryEffect.cs
-├── UI/            主菜单、角色选择、HUD、结算
-│   ├── MainMenuUI.cs
-│   ├── CharacterSelectUI.cs
-│   └── GameUI.cs
-└── Upgrade/       升级选项和升级管理
-    ├── UpgradeOption.cs
-    └── UpgradeManager.cs
-```
+- **波次通关制** — 4 个波次，每波固定生成量（8/12/18/24只），清场后晋级。Wave 4 清场后 Boss 登场，击败即胜利
+- **波次过渡升级** — 每波清场后弹出升级选择面板（时间暂停），选择后 3 秒自由活动，然后进入下一波
+- **难度递进** — 4 级难度对应 4 个波次，HP/伤害/速度倍率逐增，生成间隔缩短
+- **精英机制** — Wave 1→4 精英概率 10%/15%/20%/25%，精英 HP×1.8、伤害×1.5、经验×2
+- **场上数量控制** — 每波同时在场敌人上限（2/4/6/6）和远程上限（1/2/3/3），超过时远程转近战
+- **5 种敌人** — 蝙蝠(近战)、史莱姆(近战)、蘑菇魔(远程毒球)、水晶灵(远程冰刺)、恐惧领主(Boss·Slam范围)
+- **升级构筑** — 击杀获取经验，升级 3 选 1 卡牌（共 19 种升级，4 个类别）
+- **暂停菜单** — ESC 暂停，支持继续/重开/返回主菜单
+- **结算评价** — 展示生存时间、击杀数、等级、通关波次和评价等级
+- **Camera Shake** — 战士冲刺和重击时的震屏反馈
 
 ---
 
-## 如何运行
+## 波次难度表
 
-1. 用 **Unity Hub** 打开项目根目录
-2. 建议使用 Unity **2021.3+** 或更高版本
-3. 进入 `Assets/Scenes/MainMenuScene.unity` 点击 Play
-4. 或从 Build Settings 设置场景顺序：MainMenuScene → CharacterSelectScene → GameScene
+| | Wave 1 | Wave 2 | Wave 3 | Wave 4 |
+|---|---|---|---|---|
+| 难度等级 | 0 | 1 | 2 | 3 |
+| 生成总量 | 8只 | 12只 | 18只 | 24只 |
+| 场上上限 | 2只 | 4只 | 6只 | 6只 |
+| 远程上限 | 1只 | 2只 | 3只 | 3只 |
+| HP 倍率 | 1.0× | 1.2× | 1.5× | 1.8× |
+| 伤害倍率 | 1.0× | 1.1× | 1.25× | 1.4× |
+| 生成间隔 | 2.0s | 1.7s | 1.35s | 1.1s |
+| 精英概率 | 10% | 15% | 20% | 25% |
+
+---
+
+## 敌人一览
+
+| 敌人 | HP | 移速 | 触伤 | 弹伤 | 攻击方式 |
+|------|-----|------|------|------|---------|
+| 蝙蝠 (Bat) | 30 | 4.0 | 8 | - | 近战追踪 |
+| 史莱姆 (Slime) | 110 | 2.5 | 10 | - | 近战追踪 |
+| 蘑菇魔 (Mushroom Fiend) | 85 | 2.7 | 12 | 8 | 远程单发毒球 |
+| 水晶灵 (Crystal Wisp) | 45 | 3.6 | 9 | 9 | 远程单发冰刺 |
+| 恐惧领主 (Dreadlord) | 650 | 1.7 | 22 | Slam 30 | 范围重击 |
 
 ---
 
@@ -95,34 +80,49 @@ Assets/Scripts/
 ### 通用升级
 普攻伤害 +10 · 技能伤害 +5 · 最大生命 +20 · 移速 +10% · 普攻冷却 -10% · 生命恢复 +40 · 技能冷却 -10%
 
-### 法师 Mage 专属
+### 法师专属
 | 升级 | 效果 |
 |------|------|
-| Fireball Split (Rare) | 一次发射 3 个火球 |
+| Fireball Split (Rare) | 火球 3 发散射 |
 | Arcane Rain Bigger | 奥术雨范围增大 |
 | Arcane Rain Longer | 奥术雨持续时间延长 |
 | Arcane Rain Faster | 奥术雨伤害频率提高 |
-| Frost Field | 奥术雨减速效果增强 |
+| Frost Field | 奥术雨减速效果增强至 40% |
 | Mana Surge | 技能冷却缩减 18% |
 
-### 战士 Warrior 专属
+### 战士专属
 | 升级 | 效果 |
 |------|------|
 | Sword Wave Pierce (Rare) | 剑气穿透敌人 |
 | Sword Wave Bigger | 剑气体型增大 |
-| Dash Slash Heal | 冲刺命中回血 |
-| Dash Slash Cooldown | 冲刺冷却缩短 |
-| Earth Splitter | 冲刺终点爆炸 |
-| Battle Frenzy | 冲刺命中后短时间普攻加速 |
+| Dash Slash Heal | 冲刺命中回血 3 HP |
+| Dash Slash Cooldown | 冲刺冷却缩短 25% |
+| Earth Splitter | 冲刺终点引发范围爆裂 |
+| Battle Frenzy | 冲刺命中后 2s 内攻速翻倍 |
 
 ---
 
-## 后续优化方向
+## 项目结构
 
-- 增加音效和背景音乐
-- 增加 Boss 战
-- 增加更多地图房间
-- 增加更多升级流派
-- 增加角色动画和粒子特效
-- 增加排行榜和存档系统
-- 增加更多角色选择
+```
+Assets/Scripts/
+├── Core/          游戏主流程、数据、场景加载
+├── Player/        玩家控制、血量
+├── Enemy/         敌人 AI、生成器、波次管理
+├── Combat/        弹道、技能区域、特效
+├── UI/            主菜单、角色选择、HUD、结算
+└── Upgrade/       升级选项和管理
+```
+
+---
+
+## 如何运行
+
+1. 用 **Unity Hub** 打开项目根目录
+2. 建议 Unity **2021.3+** 或更高版本
+3. 进入 `Assets/Scenes/MainMenuScene.unity` 点击 Play
+4. 场景顺序：MainMenuScene → CharacterSelectScene → GameScene
+
+---
+
+详细设计文档见 [`docs/game-design-document.md`](docs/game-design-document.md)

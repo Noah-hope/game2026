@@ -13,19 +13,16 @@ public class GameManager : MonoBehaviour
     public bool IsGameOver { get; private set; }
     public bool IsVictory { get; private set; }
     public float SurvivalTime { get; private set; }
-    public float SurvivalTarget { get; private set; } = 60f;
     public int KillCount { get; private set; }
     public bool IsPaused { get; private set; }
+    public int CurrentWave { get; private set; }
+    public bool IsBossWave { get; private set; }
+
+    public const int TotalWaves = 4;
 
     public int DifficultyLevel
     {
-        get
-        {
-            if (SurvivalTime < 15f) return 0;
-            if (SurvivalTime < 30f) return 1;
-            if (SurvivalTime < 45f) return 2;
-            return 3;
-        }
+        get { return Mathf.Clamp(CurrentWave - 1, 0, 3); }
     }
 
     private GameUI gameUI;
@@ -49,6 +46,7 @@ public class GameManager : MonoBehaviour
     {
         Time.timeScale = 1f;
         Level = 1;
+        CurrentWave = 1;
         CurrentExp = 0;
         KillCount = 0;
         PlayerStats = GameData.GetSelectedCharacterStats();
@@ -74,11 +72,90 @@ public class GameManager : MonoBehaviour
         if (!IsGameOver && !IsVictory && !IsPaused)
         {
             SurvivalTime += Time.deltaTime;
-            if (SurvivalTime >= SurvivalTarget)
-            {
-                Victory();
-            }
         }
+    }
+
+    public void OnEnemyKilled()
+    {
+        if (IsGameOver || IsVictory) return;
+        KillCount++;
+        TryAdvanceWave();
+    }
+
+    public void TryAdvanceWave()
+    {
+        if (IsBossWave) return;
+        if (enemySpawner == null) return;
+        if (enemySpawner.IsSpawningSmall) return;
+        if (enemySpawner.ActiveSmallEnemyCount > 0) return;
+
+        if (CurrentWave < TotalWaves)
+        {
+            AdvanceWave();
+        }
+        else if (!IsBossWave)
+        {
+            IsBossWave = true;
+            if (upgradeManager != null)
+            {
+                upgradeManager.QueueUpgradeChoices(1);
+            }
+            StartCoroutine(BossSpawnCoroutine());
+        }
+    }
+
+    private System.Collections.IEnumerator BossSpawnCoroutine()
+    {
+        while (Time.timeScale == 0f)
+        {
+            yield return null;
+        }
+
+        yield return new WaitForSeconds(2.5f);
+
+        if (enemySpawner != null)
+        {
+            enemySpawner.SpawnBoss();
+        }
+    }
+
+    private System.Collections.IEnumerator WaveTransitionCoroutine()
+    {
+        while (Time.timeScale == 0f)
+        {
+            yield return null;
+        }
+
+        yield return new WaitForSeconds(3f);
+
+        if (enemySpawner != null)
+        {
+            enemySpawner.StartWave(CurrentWave);
+        }
+    }
+
+    private void AdvanceWave()
+    {
+        CurrentWave++;
+        RefreshUI();
+
+        if (upgradeManager != null)
+        {
+            upgradeManager.QueueUpgradeChoices(1);
+        }
+
+        StartCoroutine(WaveTransitionCoroutine());
+    }
+
+    public void OnBossDefeated()
+    {
+        IsBossWave = false;
+        Victory();
+    }
+
+    public void AddKill()
+    {
+        OnEnemyKilled();
     }
 
     public void AddExperience(int amount)
@@ -101,14 +178,6 @@ public class GameManager : MonoBehaviour
         if (pendingUpgradeCount > 0 && upgradeManager != null)
         {
             upgradeManager.QueueUpgradeChoices(pendingUpgradeCount);
-        }
-    }
-
-    public void AddKill()
-    {
-        if (!IsGameOver && !IsVictory)
-        {
-            KillCount++;
         }
     }
 

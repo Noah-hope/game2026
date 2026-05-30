@@ -7,6 +7,7 @@ public class UpgradeManager : MonoBehaviour
     private GameUI gameUI;
     private int pendingUpgradeCount;
     private bool isShowingUpgrade;
+    public bool IsShowingUpgrade { get { return isShowingUpgrade; } }
 
     public void Initialize(GameManager manager)
     {

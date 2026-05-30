@@ -24,6 +24,8 @@ public class EnemyController : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     private Color baseColor;
     private bool isDead;
+    public bool IsBoss { get; private set; }
+    private bool isRangedEnemy;
     private EnemyHealthBar healthBar;
     private float knockbackEndTime;
     private Vector2 knockbackVelocity;
@@ -106,6 +108,7 @@ public class EnemyController : MonoBehaviour
     public void SetPoisonSprayBehavior(float range, float cooldown, int pDamage, float pSpeed, float pLife)
     {
         isRanged = true;
+        isRangedEnemy = true;
         attackStyle = AttackStyle.PoisonSpray;
         attackRange = range;
         shootInterval = cooldown;
@@ -118,6 +121,7 @@ public class EnemyController : MonoBehaviour
     public void SetIceSpikeBehavior(float range, float cooldown, int iDamage, float iSpeed, float iLife)
     {
         isRanged = true;
+        isRangedEnemy = true;
         attackStyle = AttackStyle.IceSpike;
         attackRange = range;
         shootInterval = cooldown;
@@ -129,6 +133,7 @@ public class EnemyController : MonoBehaviour
 
     public void SetSlamBehavior(float range, float cooldown, int sDamage, float radius)
     {
+        IsBoss = true;
         isRanged = false;
         attackStyle = AttackStyle.Slam;
         attackRange = range;
@@ -253,30 +258,19 @@ public class EnemyController : MonoBehaviour
     {
         if (attackStyle == AttackStyle.PoisonSpray)
         {
-            ShootProjectileSpread(direction, 3, 14f, "Poison Glob", GameData.GetCircleSprite(), new Color(0.35f, 1f, 0.15f), new Vector3(0.24f, 0.24f, 1f), new Vector2(0.8f, 0.8f));
+            CreateEnemyProjectile(direction, "Poison Glob", GameData.GetCircleSprite(), new Color(0.35f, 1f, 0.15f), new Vector3(0.36f, 0.36f, 1f), new Vector2(0.9f, 0.9f), bulletSpeed, bulletDamage, bulletLife, new Color(0.35f, 1f, 0.15f, 0.75f));
             CombatEffectFactory.CreateCircleEffect(transform.position + (Vector3)(direction * 0.45f), new Color(0.25f, 1f, 0.1f, 0.55f), 0.42f, 0.12f, 4);
             return;
         }
 
         if (attackStyle == AttackStyle.IceSpike)
         {
-            ShootProjectileSpread(direction, 3, 9f, "Ice Spike", GameData.GetSquareSprite(), new Color(0.45f, 0.9f, 1f), new Vector3(0.16f, 0.48f, 1f), new Vector2(0.7f, 1.25f));
+            CreateEnemyProjectile(direction, "Ice Spike", GameData.GetSquareSprite(), new Color(0.45f, 0.9f, 1f), new Vector3(0.22f, 0.6f, 1f), new Vector2(0.8f, 1.35f), bulletSpeed, bulletDamage, bulletLife, new Color(0.45f, 0.9f, 1f, 0.75f));
             CombatEffectFactory.CreateCircleEffect(transform.position + (Vector3)(direction * 0.45f), new Color(0.65f, 0.95f, 1f, 0.5f), 0.42f, 0.12f, 4);
             return;
         }
 
         CreateEnemyProjectile(direction, "Enemy Bullet", GameData.GetCircleSprite(), new Color(1f, 0.35f, 0.2f), new Vector3(0.25f, 0.25f, 1f), Vector2.one, bulletSpeed, bulletDamage, bulletLife, new Color(1f, 0.35f, 0.2f, 0.75f));
-    }
-
-    private void ShootProjectileSpread(Vector2 direction, int count, float spreadAngle, string projectileName, Sprite sprite, Color color, Vector3 scale, Vector2 colliderSize)
-    {
-        int middle = count / 2;
-        for (int i = 0; i < count; i++)
-        {
-            float angle = (i - middle) * spreadAngle;
-            Vector2 shotDirection = RotateDirection(direction, angle);
-            CreateEnemyProjectile(shotDirection, projectileName, sprite, color, scale, colliderSize, bulletSpeed, bulletDamage, bulletLife, color);
-        }
     }
 
     private void CreateEnemyProjectile(Vector2 direction, string projectileName, Sprite sprite, Color color, Vector3 scale, Vector2 colliderSize, float speed, int damage, float lifetime, Color trailColor)
@@ -302,14 +296,6 @@ public class EnemyController : MonoBehaviour
         bullet.Initialize(direction, speed, damage, lifetime, trailColor);
         bullet.SetTargetsPlayer();
         bullet.SetHitEffectColor(trailColor);
-    }
-
-    private Vector2 RotateDirection(Vector2 direction, float degrees)
-    {
-        Quaternion rotation = Quaternion.Euler(0f, 0f, degrees);
-        Vector2 normalized = direction.normalized;
-        Vector3 rotated = rotation * new Vector3(normalized.x, normalized.y, 0f);
-        return new Vector2(rotated.x, rotated.y);
     }
 
     private void UpdateSlamBehavior(Vector2 direction, float distance)
@@ -422,12 +408,24 @@ public class EnemyController : MonoBehaviour
         if (enemySpawner != null)
         {
             enemySpawner.UnregisterEnemy();
+            if (!IsBoss)
+            {
+                enemySpawner.UnregisterSmallEnemy();
+                if (isRangedEnemy)
+                {
+                    enemySpawner.UnregisterRangedEnemy();
+                }
+            }
         }
 
         if (gameManager != null)
         {
             gameManager.AddKill();
             gameManager.AddExperience(expReward);
+            if (IsBoss)
+            {
+                gameManager.OnBossDefeated();
+            }
         }
 
         Destroy(gameObject);
