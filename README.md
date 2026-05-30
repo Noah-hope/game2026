@@ -118,6 +118,10 @@ Assets/Scripts/
 
 ## 如何运行
 
+### 直接运行（无需 Unity）
+进入 `exe/` 文件夹，双击 **`game.exe`** 即可开始游戏。
+
+### 源码运行（需要 Unity）
 1. 用 **Unity Hub** 打开项目根目录
 2. 建议 Unity **2021.3+** 或更高版本
 3. 进入 `Assets/Scenes/MainMenuScene.unity` 点击 Play
