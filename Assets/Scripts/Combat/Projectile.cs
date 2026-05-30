@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Projectile : MonoBehaviour
@@ -7,6 +8,11 @@ public class Projectile : MonoBehaviour
     private int damage;
     private float lifeTimer;
     private Rigidbody2D body;
+    private bool hitsEnemies = true;
+    private bool hitsPlayer;
+    private bool pierce;
+    private Color hitEffectColor = new Color(1f, 0.25f, 0.25f, 0.6f);
+    private HashSet<EnemyController> hitEnemies = new HashSet<EnemyController>();
 
     public void Initialize(Vector2 shootDirection, float projectileSpeed, int projectileDamage, float lifetime, Color effectColor)
     {
@@ -26,6 +32,22 @@ public class Projectile : MonoBehaviour
         CreateTrail(effectColor);
     }
 
+    public void SetPierce(bool canPierce)
+    {
+        pierce = canPierce;
+    }
+
+    public void SetTargetsPlayer()
+    {
+        hitsEnemies = false;
+        hitsPlayer = true;
+    }
+
+    public void SetHitEffectColor(Color color)
+    {
+        hitEffectColor = color;
+    }
+
     private void Update()
     {
         lifeTimer -= Time.deltaTime;
@@ -43,13 +65,40 @@ public class Projectile : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        EnemyController enemy = other.GetComponent<EnemyController>();
-        if (enemy != null)
+        if (hitsEnemies)
         {
-            enemy.TakeDamage(damage);
-            CombatEffectFactory.CreateCircleEffect(transform.position, new Color(1f, 0.85f, 0.2f, 0.75f), 0.4f, 0.08f, 5);
-            Destroy(gameObject);
-            return;
+            EnemyController enemy = other.GetComponent<EnemyController>();
+            if (enemy != null)
+            {
+                if (pierce && hitEnemies.Contains(enemy))
+                {
+                    return;
+                }
+
+                enemy.TakeDamage(damage);
+                CombatEffectFactory.CreateCircleEffect(transform.position, new Color(1f, 0.85f, 0.2f, 0.75f), 0.4f, 0.08f, 5);
+
+                if (pierce)
+                {
+                    hitEnemies.Add(enemy);
+                    return;
+                }
+
+                Destroy(gameObject);
+                return;
+            }
+        }
+
+        if (hitsPlayer)
+        {
+            PlayerHealth playerHealth = other.GetComponent<PlayerHealth>();
+            if (playerHealth != null)
+            {
+                playerHealth.TakeDamage(damage);
+                CombatEffectFactory.CreateCircleEffect(transform.position, hitEffectColor, 0.35f, 0.07f, 5);
+                Destroy(gameObject);
+                return;
+            }
         }
 
         if (other.GetComponent<Obstacle>() != null)

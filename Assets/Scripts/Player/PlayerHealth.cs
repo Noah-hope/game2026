@@ -4,6 +4,7 @@ public class PlayerHealth : MonoBehaviour
 {
     public int CurrentHealth { get; private set; }
     public int MaxHealth { get; private set; }
+    public bool IsInvincible { get; private set; }
 
     private GameManager gameManager;
     private SpriteRenderer spriteRenderer;
@@ -37,6 +38,12 @@ public class PlayerHealth : MonoBehaviour
             return;
         }
 
+        if (IsInvincible)
+        {
+            CombatEffectFactory.CreateCircleEffect(transform.position, new Color(0.2f, 0.75f, 1f, 0.42f), 0.8f, 0.08f, 6);
+            return;
+        }
+
         CurrentHealth = Mathf.Max(0, CurrentHealth - damage);
         CombatEffectFactory.CreateCircleEffect(transform.position, new Color(1f, 0.2f, 0.2f, 0.55f), 0.8f, 0.1f, 6);
         CombatEffectFactory.CreateDamageText(transform.position + new Vector3(0f, 0.8f, 0f), "-" + damage, new Color(1f, 0.25f, 0.25f, 1f));
@@ -59,6 +66,15 @@ public class PlayerHealth : MonoBehaviour
     public void Heal(int amount)
     {
         CurrentHealth = Mathf.Min(MaxHealth, CurrentHealth + amount);
+        if (gameManager != null)
+        {
+            gameManager.RefreshUI();
+        }
+    }
+
+    public void ToggleInvincible()
+    {
+        IsInvincible = !IsInvincible;
         if (gameManager != null)
         {
             gameManager.RefreshUI();

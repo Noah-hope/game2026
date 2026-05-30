@@ -83,7 +83,11 @@ public class PlayerController : MonoBehaviour
         float remaining = nextSkillTime - Time.time;
         if (remaining <= 0f)
         {
-            return "Ready";
+            return "\u5c31\u7eea";
+        }
+        if (remaining <= 0f)
+        {
+            return "就绪";
         }
 
         return remaining.ToString("0.0") + "s";
@@ -94,10 +98,36 @@ public class PlayerController : MonoBehaviour
         float remaining = nextAttackTime - Time.time;
         if (remaining <= 0f)
         {
+            return "\u5c31\u7eea";
+        }
+        if (remaining <= 0f)
+        {
             return "就绪";
         }
 
         return remaining.ToString("0.0") + "s";
+    }
+
+    public float GetAttackCooldownRatio()
+    {
+        if (stats == null || stats.AttackCooldown <= 0f)
+        {
+            return 0f;
+        }
+
+        float remaining = nextAttackTime - Time.time;
+        return Mathf.Clamp01(remaining / stats.AttackCooldown);
+    }
+
+    public float GetSkillCooldownRatio()
+    {
+        if (stats == null || stats.SkillCooldown <= 0f)
+        {
+            return 0f;
+        }
+
+        float remaining = nextSkillTime - Time.time;
+        return Mathf.Clamp01(remaining / stats.SkillCooldown);
     }
 
     public void LockControls()
@@ -287,14 +317,21 @@ public class PlayerController : MonoBehaviour
         rainObject.transform.position = center;
 
         ArcaneRainArea rainArea = rainObject.AddComponent<ArcaneRainArea>();
-        rainArea.Initialize(center, stats.SkillRadius, stats.SkillDuration, stats.RainInterval, stats.SkillDamage, stats.RainHitRadius);
+        rainArea.Initialize(center,
+            stats.SkillRadius + stats.SkillRadiusBonus,
+            stats.SkillDuration + stats.SkillDurationBonus,
+            stats.RainInterval * stats.SkillTickIntervalMultiplier,
+            stats.SkillDamage,
+            stats.RainHitRadius,
+            stats.RainSlowMultiplier);
     }
 
     private void FireProjectile(Vector2 direction, int damage, float speed, float lifetime, Color color, float size)
     {
         GameObject projectileObject = new GameObject(stats.AttackName);
         projectileObject.transform.position = transform.position + (Vector3)(direction * 0.55f);
-        projectileObject.transform.localScale = new Vector3(size, size, 1f);
+        float finalSize = size * stats.ProjectileScaleMultiplier;
+        projectileObject.transform.localScale = new Vector3(finalSize, finalSize, 1f);
 
         SpriteRenderer renderer = projectileObject.AddComponent<SpriteRenderer>();
         Sprite attackSprite = GameData.GetAttackSprite(stats.Type);
@@ -303,9 +340,10 @@ public class PlayerController : MonoBehaviour
         renderer.sortingOrder = 3;
         if (attackSprite != null)
         {
+            float spriteScale = stats.ProjectileScaleMultiplier;
             projectileObject.transform.localScale = stats.Type == CharacterType.Warrior
-                ? new Vector3(0.75f, 0.75f, 1f)
-                : new Vector3(0.68f, 0.68f, 1f);
+                ? new Vector3(0.75f * spriteScale, 0.75f * spriteScale, 1f)
+                : new Vector3(0.68f * spriteScale, 0.68f * spriteScale, 1f);
         }
 
         Rigidbody2D projectileBody = projectileObject.AddComponent<Rigidbody2D>();
@@ -318,18 +356,32 @@ public class PlayerController : MonoBehaviour
         collider.isTrigger = true;
         if (attackSprite != null)
         {
-            collider.size = stats.Type == CharacterType.Warrior ? new Vector2(0.9f, 0.45f) : new Vector2(0.5f, 0.5f);
+            Vector2 baseCollider = stats.Type == CharacterType.Warrior ? new Vector2(0.9f, 0.45f) : new Vector2(0.5f, 0.5f);
+            collider.size = baseCollider * stats.ProjectileScaleMultiplier;
         }
 
         Projectile projectile = projectileObject.AddComponent<Projectile>();
         projectile.Initialize(direction, speed, damage, lifetime, color);
+        if (stats.ProjectilePierce)
+        {
+            projectile.SetPierce(true);
+        }
     }
 
     private IEnumerator AttackWindupRoutine(Vector2 direction)
     {
         isAttackWindingUp = true;
         yield return PlayWindupVisual(direction, 0.08f, 0.05f, new Color(1f, 1f, 1f, 1f));
-        FireProjectile(direction, stats.AttackDamage, stats.BulletSpeed, stats.BulletLifetime, stats.BulletColor, 0.32f);
+
+        int count = stats.AttackProjectileCount;
+        float spreadAngle = stats.AttackSpreadAngle;
+        for (int i = 0; i < count; i++)
+        {
+            float offsetAngle = (i - (count - 1f) * 0.5f) * spreadAngle;
+            Vector2 spreadDir = Quaternion.Euler(0f, 0f, offsetAngle) * direction;
+            FireProjectile(spreadDir, stats.AttackDamage, stats.BulletSpeed, stats.BulletLifetime, stats.BulletColor, 0.32f);
+        }
+
         isAttackWindingUp = false;
     }
 
@@ -407,11 +459,34 @@ public class PlayerController : MonoBehaviour
         float elapsed = 0f;
         float dashSpeed = stats.DashDistance / Mathf.Max(0.01f, stats.DashDuration);
         float hitRadius = 0.75f;
+        float nextAfterImageTime = 0f;
+        float nextTrailTime = 0f;
         HashSet<EnemyController> hitEnemies = new HashSet<EnemyController>();
+
+        Vector3 startPos = transform.position;
+        CreateDashChargeEffect(startPos);
+        CreateDashStartFlash(startPos, direction);
+        if (gameManager != null)
+        {
+            gameManager.ShakeCamera(0.1f, 0.12f);
+        }
 
         while (elapsed < stats.DashDuration)
         {
             body.velocity = direction * dashSpeed;
+
+            if (elapsed >= nextAfterImageTime)
+            {
+                nextAfterImageTime = elapsed + 0.04f;
+                CreateDashAfterImage(transform.position, spriteRenderer != null ? spriteRenderer.sprite : null);
+            }
+
+            if (elapsed >= nextTrailTime)
+            {
+                nextTrailTime = elapsed + 0.05f;
+                CreateDashSlashTrail(transform.position, direction);
+            }
+
             Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, hitRadius);
             for (int i = 0; i < hits.Length; i++)
             {
@@ -420,6 +495,15 @@ public class PlayerController : MonoBehaviour
                 {
                     hitEnemies.Add(enemy);
                     enemy.TakeDamage(stats.SkillDamage);
+                    CreateDashHitEffect(enemy.transform.position, direction);
+                    if (gameManager != null)
+                    {
+                        gameManager.ShakeCamera(0.06f, 0.08f);
+                    }
+                    if (stats.DashHealOnHit > 0 && gameManager != null && gameManager.PlayerHealth != null)
+                    {
+                        gameManager.PlayerHealth.Heal(stats.DashHealOnHit);
+                    }
                 }
             }
 
@@ -429,6 +513,207 @@ public class PlayerController : MonoBehaviour
 
         body.velocity = Vector2.zero;
         isDashing = false;
+
+        CreateDashEndBurst(transform.position, direction, stats.DashEndExplosion);
+
+        if (stats.DashEndExplosion)
+        {
+            float explosionRadius = 1.4f;
+            CombatEffectFactory.CreateCircleEffect(transform.position, new Color(1f, 0.3f, 0f, 0.75f), explosionRadius, 0.25f, 6);
+            Collider2D[] expHits = Physics2D.OverlapCircleAll(transform.position, explosionRadius);
+            for (int i = 0; i < expHits.Length; i++)
+            {
+                EnemyController enemy = expHits[i].GetComponent<EnemyController>();
+                if (enemy != null && !hitEnemies.Contains(enemy))
+                {
+                    hitEnemies.Add(enemy);
+                    enemy.TakeDamage(stats.SkillDamage);
+                    if (stats.DashHealOnHit > 0 && gameManager != null && gameManager.PlayerHealth != null)
+                    {
+                        gameManager.PlayerHealth.Heal(stats.DashHealOnHit);
+                    }
+                }
+            }
+        }
+
+        if (stats.BattleFrenzyDuration > 0f && hitEnemies.Count > 0)
+        {
+            StartCoroutine(BattleFrenzyRoutine(stats.BattleFrenzyDuration));
+        }
+
+        if (gameManager != null)
+        {
+            gameManager.ShakeCamera(0.14f, 0.2f);
+        }
+    }
+
+    private void CreateDashChargeEffect(Vector3 position)
+    {
+        CombatEffectFactory.CreateCircleEffect(position, new Color(1f, 0.38f, 0.06f, 0.78f), 0.95f, 0.14f, 6);
+        CombatEffectFactory.CreateCircleEffect(position, new Color(1f, 0.88f, 0.48f, 0.86f), 0.42f, 0.09f, 7);
+    }
+
+    private void CreateDashStartFlash(Vector3 position, Vector2 direction)
+    {
+        Vector2 dashDirection = direction.sqrMagnitude > 0.001f ? direction.normalized : Vector2.right;
+        GameObject flash = new GameObject("Dash Slash Start Flash");
+        flash.transform.position = position + (Vector3)(dashDirection * 0.35f);
+        flash.transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(dashDirection.y, dashDirection.x) * Mathf.Rad2Deg);
+        flash.transform.localScale = new Vector3(1.1f, 0.20f, 1f);
+
+        SpriteRenderer renderer = flash.AddComponent<SpriteRenderer>();
+        renderer.sprite = GameData.GetSquareSprite();
+        renderer.color = new Color(1f, 0.92f, 0.65f, 0.85f);
+        renderer.sortingOrder = 7;
+
+        TemporaryEffect effect = flash.AddComponent<TemporaryEffect>();
+        effect.Initialize(0.10f, true, 1.45f);
+
+        CreateDashPreviewLine(position, dashDirection);
+    }
+
+    private void CreateDashPreviewLine(Vector3 position, Vector2 direction)
+    {
+        GameObject line = new GameObject("Dash Slash Preview Line");
+        line.transform.position = position + (Vector3)(direction * 1.15f);
+        line.transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg);
+        line.transform.localScale = new Vector3(2.35f, 0.055f, 1f);
+
+        SpriteRenderer renderer = line.AddComponent<SpriteRenderer>();
+        renderer.sprite = GameData.GetSquareSprite();
+        renderer.color = new Color(1f, 0.42f, 0.08f, 0.62f);
+        renderer.sortingOrder = 6;
+
+        TemporaryEffect effect = line.AddComponent<TemporaryEffect>();
+        effect.Initialize(0.11f, true, 1.12f);
+    }
+
+    private void CreateDashAfterImage(Vector3 position, Sprite sprite)
+    {
+        GameObject afterImage = new GameObject("Dash AfterImage");
+        afterImage.transform.position = position;
+
+        SpriteRenderer renderer = afterImage.AddComponent<SpriteRenderer>();
+        if (sprite != null)
+        {
+            renderer.sprite = sprite;
+        }
+        else
+        {
+            renderer.sprite = GameData.GetSquareSprite();
+            afterImage.transform.localScale = new Vector3(0.7f, 0.7f, 1f);
+        }
+        renderer.color = new Color(1f, 0.30f, 0.08f, 0.55f);
+        renderer.sortingOrder = 1;
+        if (spriteRenderer != null)
+        {
+            renderer.flipX = spriteRenderer.flipX;
+        }
+
+        TemporaryEffect effect = afterImage.AddComponent<TemporaryEffect>();
+        effect.Initialize(0.30f, true, 0.88f);
+    }
+
+    private void CreateDashSlashTrail(Vector3 position, Vector2 direction)
+    {
+        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+        Vector3 side = new Vector3(-direction.y, direction.x, 0f);
+
+        CreateSlashTrail(position + side * 0.10f, angle + 3f, new Vector3(2.35f, 0.18f, 1f), new Color(1f, 0.38f, 0.05f, 0.74f), 0.23f, 4, 0.72f);
+        CreateSlashTrail(position - side * 0.10f, angle - 5f, new Vector3(1.80f, 0.12f, 1f), new Color(1f, 0.72f, 0.16f, 0.58f), 0.18f, 5, 0.62f);
+        CreateSlashTrail(position + (Vector3)(direction.normalized * 0.20f), angle, new Vector3(1.25f, 0.055f, 1f), new Color(1f, 0.92f, 0.50f, 0.78f), 0.13f, 6, 0.52f);
+    }
+
+    private void CreateDashHitEffect(Vector3 position, Vector2 direction)
+    {
+        CombatEffectFactory.CreateCircleEffect(position, new Color(1f, 0.74f, 0.16f, 0.88f), 0.55f, 0.10f, 7);
+        CombatEffectFactory.CreateCircleEffect(position, new Color(1f, 1f, 1f, 0.72f), 0.28f, 0.075f, 8);
+
+        float baseAngle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+        for (int i = 0; i < 5; i++)
+        {
+            float sparkAngle = baseAngle + Random.Range(-55f, 55f);
+            CreateHitSpark(position, sparkAngle, Random.Range(0.24f, 0.48f), new Color(1f, Random.Range(0.55f, 0.94f), 0.12f, 0.88f));
+        }
+    }
+
+    private void CreateDashEndBurst(Vector3 position, Vector2 direction, bool empowered)
+    {
+        int arcCount = empowered ? 13 : 9;
+        float baseAngle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+        float totalSpread = empowered ? 108f : 82f;
+        float burstScale = empowered ? 1.25f : 1f;
+
+        for (int i = 0; i < arcCount; i++)
+        {
+            float t = (i - (arcCount - 1f) * 0.5f) / ((arcCount - 1f) * 0.5f);
+            float arcAngle = baseAngle + t * totalSpread * 0.5f;
+            float radians = arcAngle * Mathf.Deg2Rad;
+            Vector3 offset = new Vector3(Mathf.Cos(radians), Mathf.Sin(radians), 0f) * (0.42f + Mathf.Abs(t) * 0.12f) * burstScale;
+
+            GameObject arc = new GameObject("Slash Arc");
+            arc.transform.position = position + offset;
+            arc.transform.rotation = Quaternion.Euler(0f, 0f, arcAngle);
+            arc.transform.localScale = new Vector3((0.82f - Mathf.Abs(t) * 0.15f) * burstScale, 0.13f * burstScale, 1f);
+
+            SpriteRenderer renderer = arc.AddComponent<SpriteRenderer>();
+            renderer.sprite = GameData.GetSquareSprite();
+            float alpha = 0.90f - Mathf.Abs(t) * 0.42f;
+            renderer.color = empowered ? new Color(1f, 0.42f, 0.05f, alpha) : new Color(1f, 0.70f, 0.15f, alpha);
+            renderer.sortingOrder = 7;
+
+            TemporaryEffect effect = arc.AddComponent<TemporaryEffect>();
+            effect.Initialize(empowered ? 0.34f : 0.27f, true, 1.28f);
+        }
+
+        CombatEffectFactory.CreateCircleEffect(position, new Color(1f, 0.45f, 0f, 0.72f), 1.05f * burstScale, 0.24f, 6);
+        CombatEffectFactory.CreateCircleEffect(position + (Vector3)(direction.normalized * 0.38f), new Color(1f, 0.82f, 0.25f, 0.62f), 0.78f * burstScale, 0.17f, 8);
+        if (empowered)
+        {
+            CombatEffectFactory.CreateCircleEffect(position, new Color(1f, 0.18f, 0f, 0.52f), 1.75f, 0.34f, 6);
+        }
+    }
+
+    private void CreateSlashTrail(Vector3 position, float angle, Vector3 scale, Color color, float lifetime, int sortingOrder, float finalScaleMultiplier)
+    {
+        GameObject trail = new GameObject("Dash Slash Trail");
+        trail.transform.position = position;
+        trail.transform.rotation = Quaternion.Euler(0f, 0f, angle);
+        trail.transform.localScale = scale;
+
+        SpriteRenderer renderer = trail.AddComponent<SpriteRenderer>();
+        renderer.sprite = GameData.GetSquareSprite();
+        renderer.color = color;
+        renderer.sortingOrder = sortingOrder;
+
+        TemporaryEffect effect = trail.AddComponent<TemporaryEffect>();
+        effect.Initialize(lifetime, true, finalScaleMultiplier);
+    }
+
+    private void CreateHitSpark(Vector3 position, float angle, float length, Color color)
+    {
+        GameObject spark = new GameObject("Dash Slash Spark");
+        spark.transform.position = position;
+        spark.transform.rotation = Quaternion.Euler(0f, 0f, angle);
+        spark.transform.localScale = new Vector3(length, 0.055f, 1f);
+
+        SpriteRenderer renderer = spark.AddComponent<SpriteRenderer>();
+        renderer.sprite = GameData.GetSquareSprite();
+        renderer.color = color;
+        renderer.sortingOrder = 8;
+
+        Vector3 direction = new Vector3(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad), 0f);
+        TemporaryEffect effect = spark.AddComponent<TemporaryEffect>();
+        effect.Initialize(0.13f, true, 0.35f);
+        effect.SetMotion(direction * 0.7f, Random.Range(-60f, 60f));
+    }
+
+    private IEnumerator BattleFrenzyRoutine(float duration)
+    {
+        float originalCooldown = stats.AttackCooldown;
+        stats.AttackCooldown *= 0.5f;
+        yield return new WaitForSeconds(duration);
+        stats.AttackCooldown = originalCooldown;
     }
 
 }

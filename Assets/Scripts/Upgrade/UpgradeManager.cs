@@ -71,6 +71,59 @@ public class UpgradeManager : MonoBehaviour
         {
             gameManager.PlayerHealth.Heal(40);
         }
+        else if (option.Type == UpgradeType.SkillCooldown)
+        {
+            stats.SkillCooldown = Mathf.Max(0.5f, stats.SkillCooldown * 0.9f);
+        }
+        else if (option.Type == UpgradeType.FireballSplit)
+        {
+            stats.AttackProjectileCount = 3;
+        }
+        else if (option.Type == UpgradeType.ArcaneRainBigger)
+        {
+            stats.SkillRadiusBonus += 0.6f;
+        }
+        else if (option.Type == UpgradeType.ArcaneRainLonger)
+        {
+            stats.SkillDurationBonus += 1f;
+        }
+        else if (option.Type == UpgradeType.ArcaneRainFaster)
+        {
+            stats.SkillTickIntervalMultiplier = Mathf.Max(0.5f, stats.SkillTickIntervalMultiplier - 0.2f);
+        }
+        else if (option.Type == UpgradeType.SwordWavePierce)
+        {
+            stats.ProjectilePierce = true;
+        }
+        else if (option.Type == UpgradeType.SwordWaveBigger)
+        {
+            stats.ProjectileScaleMultiplier += 0.4f;
+        }
+        else if (option.Type == UpgradeType.DashSlashHeal)
+        {
+            stats.DashHealOnHit += 3;
+        }
+        else if (option.Type == UpgradeType.DashSlashCooldown)
+        {
+            stats.SkillCooldown = Mathf.Max(1.5f, stats.SkillCooldown * 0.75f);
+        }
+        else if (option.Type == UpgradeType.FrostField)
+        {
+            stats.RainSlowMultiplier = Mathf.Max(0.4f, stats.RainSlowMultiplier - 0.15f);
+        }
+        else if (option.Type == UpgradeType.ManaSurge)
+        {
+            stats.SkillCooldown = Mathf.Max(0.5f, stats.SkillCooldown * 0.82f);
+        }
+        else if (option.Type == UpgradeType.EarthSplitter)
+        {
+            stats.DashEndExplosion = true;
+        }
+        else if (option.Type == UpgradeType.BattleFrenzy)
+        {
+            if (stats.BattleFrenzyDuration <= 0f) stats.BattleFrenzyDuration = 2f;
+            else stats.BattleFrenzyDuration += 1f;
+        }
 
         if (gameUI == null)
         {

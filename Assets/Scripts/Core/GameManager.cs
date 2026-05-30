@@ -9,13 +9,30 @@ public class GameManager : MonoBehaviour
     public PlayerHealth PlayerHealth { get; private set; }
     public int Level { get; private set; }
     public int CurrentExp { get; private set; }
-    public int NextLevelExp { get { return 30 + (Level - 1) * 20; } }
+    public int NextLevelExp { get { return 20 + Level * 15; } }
     public bool IsGameOver { get; private set; }
+    public bool IsVictory { get; private set; }
+    public float SurvivalTime { get; private set; }
+    public float SurvivalTarget { get; private set; } = 60f;
+    public int KillCount { get; private set; }
+    public bool IsPaused { get; private set; }
+
+    public int DifficultyLevel
+    {
+        get
+        {
+            if (SurvivalTime < 15f) return 0;
+            if (SurvivalTime < 30f) return 1;
+            if (SurvivalTime < 45f) return 2;
+            return 3;
+        }
+    }
 
     private GameUI gameUI;
     private UpgradeManager upgradeManager;
     private EnemySpawner enemySpawner;
     private Camera mainCamera;
+    private Vector3 cameraShakeOffset;
 
     private void Awake()
     {
@@ -33,6 +50,7 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 1f;
         Level = 1;
         CurrentExp = 0;
+        KillCount = 0;
         PlayerStats = GameData.GetSelectedCharacterStats();
 
         SetupCamera();
@@ -47,13 +65,25 @@ public class GameManager : MonoBehaviour
         if (mainCamera != null && PlayerController != null)
         {
             Vector3 playerPosition = PlayerController.transform.position;
-            mainCamera.transform.position = new Vector3(playerPosition.x, playerPosition.y, -10f);
+            mainCamera.transform.position = new Vector3(playerPosition.x, playerPosition.y, -10f) + cameraShakeOffset;
+        }
+    }
+
+    private void Update()
+    {
+        if (!IsGameOver && !IsVictory && !IsPaused)
+        {
+            SurvivalTime += Time.deltaTime;
+            if (SurvivalTime >= SurvivalTarget)
+            {
+                Victory();
+            }
         }
     }
 
     public void AddExperience(int amount)
     {
-        if (IsGameOver)
+        if (IsGameOver || IsVictory)
         {
             return;
         }
@@ -74,6 +104,25 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public void AddKill()
+    {
+        if (!IsGameOver && !IsVictory)
+        {
+            KillCount++;
+        }
+    }
+
+    public void TogglePause()
+    {
+        if (IsGameOver || IsVictory)
+        {
+            return;
+        }
+
+        IsPaused = !IsPaused;
+        Time.timeScale = IsPaused ? 0f : 1f;
+    }
+
     public void RefreshUI()
     {
         if (gameUI != null)
@@ -84,7 +133,7 @@ public class GameManager : MonoBehaviour
 
     public void GameOver()
     {
-        if (IsGameOver)
+        if (IsGameOver || IsVictory)
         {
             return;
         }
@@ -101,6 +150,48 @@ public class GameManager : MonoBehaviour
         {
             gameUI.ShowGameOverPanel();
         }
+    }
+
+    public void Victory()
+    {
+        if (IsGameOver || IsVictory)
+        {
+            return;
+        }
+
+        IsVictory = true;
+        if (enemySpawner != null)
+        {
+            enemySpawner.StopSpawning();
+        }
+
+        CleanupCombatObjects();
+        Time.timeScale = 0f;
+        if (gameUI != null)
+        {
+            gameUI.ShowVictoryPanel();
+        }
+    }
+
+    public void ShakeCamera(float duration, float strength)
+    {
+        StartCoroutine(CameraShakeRoutine(duration, strength));
+    }
+
+    private System.Collections.IEnumerator CameraShakeRoutine(float duration, float strength)
+    {
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float decay = 1f - (elapsed / duration);
+            cameraShakeOffset = new Vector3(
+                Random.Range(-1f, 1f) * strength * decay,
+                Random.Range(-1f, 1f) * strength * decay,
+                0f);
+            yield return null;
+        }
+        cameraShakeOffset = Vector3.zero;
     }
 
     private void SetupCamera()

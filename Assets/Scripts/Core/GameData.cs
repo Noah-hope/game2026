@@ -32,14 +32,14 @@ public static class GameData
                 BulletSpeed = 8f,
                 BulletLifetime = 0.7f,
                 SkillName = "Dash Slash",
-                SkillDamage = 50,
+                SkillDamage = 55,
                 SkillCooldown = 6f,
                 SkillRadius = 0f,
                 SkillDuration = 0f,
                 RainInterval = 0f,
                 RainHitRadius = 0f,
-                DashDistance = 3f,
-                DashDuration = 0.15f,
+                DashDistance = 3.5f,
+                DashDuration = 0.18f,
                 BodyColor = new Color(0.9f, 0.15f, 0.12f),
                 BulletColor = new Color(1f, 0.92f, 0.15f)
             };
@@ -57,14 +57,15 @@ public static class GameData
             BulletSpeed = 10f,
             BulletLifetime = 2f,
             SkillName = "Arcane Rain",
-            SkillDamage = 12,
+            SkillDamage = 10,
             SkillCooldown = 7f,
-            SkillRadius = 2.5f,
+            SkillRadius = 2.8f,
             SkillDuration = 3f,
-            RainInterval = 0.25f,
-            RainHitRadius = 0.45f,
+            RainInterval = 0.4f,
+            RainHitRadius = 0.5f,
             DashDistance = 0f,
             DashDuration = 0f,
+            RainSlowMultiplier = 0.75f,
             BodyColor = new Color(0.1f, 0.35f, 1f),
             BulletColor = new Color(1f, 0.45f, 0.05f)
         };
@@ -159,9 +160,24 @@ public static class GameData
 
     public static Sprite GetEnemySprite(string enemyName)
     {
-        if (enemyName == "Bat")
+        if (enemyName.Contains("Bat"))
         {
             return LoadRuntimeSprite("Art/Sprites/bat");
+        }
+
+        if (enemyName.Contains("Mushroom Fiend"))
+        {
+            return LoadRuntimeSprite("Art/Sprites/mushroom_fiend");
+        }
+
+        if (enemyName.Contains("Crystal Wisp"))
+        {
+            return LoadRuntimeSprite("Art/Sprites/crystal_wisp");
+        }
+
+        if (enemyName.Contains("Dreadlord"))
+        {
+            return LoadRuntimeSprite("Art/Sprites/dreadlord_boss");
         }
 
         return LoadRuntimeSprite("Art/Sprites/slime");
@@ -189,14 +205,49 @@ public static class GameData
 
     public static List<UpgradeOption> CreateUpgradeOptions()
     {
-        return new List<UpgradeOption>
+        CharacterStats stats = GameManager.Instance != null ? GameManager.Instance.PlayerStats : null;
+
+        List<UpgradeOption> pool = new List<UpgradeOption>
         {
-            new UpgradeOption("\u666e\u653b\u4f24\u5bb3 +10", "Attack Damage +10", UpgradeType.AttackDamage),
-            new UpgradeOption("\u6280\u80fd\u4f24\u5bb3 +5", "Skill Damage +5", UpgradeType.SkillDamage),
-            new UpgradeOption("\u6700\u5927\u751f\u547d +20", "Max HP +20 and heal 20 HP", UpgradeType.MaxHealth),
-            new UpgradeOption("\u79fb\u52a8\u901f\u5ea6 +10%", "Move Speed +10%", UpgradeType.MoveSpeed),
-            new UpgradeOption("\u666e\u653b\u51b7\u5374 -10%", "Attack Cooldown -10%", UpgradeType.AttackCooldown),
-            new UpgradeOption("\u751f\u547d\u6062\u590d +40", "Heal 40 HP instantly", UpgradeType.Heal)
+            new UpgradeOption("\u666e\u653b\u4f24\u5bb3 +10", "Attack Damage +10", UpgradeType.AttackDamage, UpgradeCategory.Common),
+            new UpgradeOption("\u6280\u80fd\u4f24\u5bb3 +5", "Skill Damage +5", UpgradeType.SkillDamage, UpgradeCategory.Common),
+            new UpgradeOption("\u6700\u5927\u751f\u547d +20", "Max HP +20 and heal 20 HP", UpgradeType.MaxHealth, UpgradeCategory.Common),
+            new UpgradeOption("\u79fb\u52a8\u901f\u5ea6 +10%", "Move Speed +10%", UpgradeType.MoveSpeed, UpgradeCategory.Common),
+            new UpgradeOption("\u666e\u653b\u51b7\u5374 -10%", "Attack Cooldown -10%", UpgradeType.AttackCooldown, UpgradeCategory.Common),
+            new UpgradeOption("\u751f\u547d\u6062\u590d +40", "Heal 40 HP instantly", UpgradeType.Heal, UpgradeCategory.Common),
+            new UpgradeOption("\u6280\u80fd\u51b7\u5374 -10%", "Skill Cooldown -10%", UpgradeType.SkillCooldown, UpgradeCategory.Common),
         };
+
+        if (SelectedCharacter == CharacterType.Mage)
+        {
+            if (stats == null || stats.AttackProjectileCount < 3)
+                pool.Add(new UpgradeOption("Fireball Split", "Shoot 3 fireballs in a small spread.", UpgradeType.FireballSplit, UpgradeCategory.Rare));
+
+            pool.Add(new UpgradeOption("Arcane Rain Bigger", "Arcane Rain area increased.", UpgradeType.ArcaneRainBigger, UpgradeCategory.Mage));
+            pool.Add(new UpgradeOption("Arcane Rain Longer", "Arcane Rain lasts longer.", UpgradeType.ArcaneRainLonger, UpgradeCategory.Mage));
+            pool.Add(new UpgradeOption("Arcane Rain Faster", "Arcane Rain ticks faster.", UpgradeType.ArcaneRainFaster, UpgradeCategory.Mage));
+
+            if (stats == null || stats.RainSlowMultiplier > 0.6f)
+                pool.Add(new UpgradeOption("Frost Field", "Enemies inside Arcane Rain are slowed more.", UpgradeType.FrostField, UpgradeCategory.Mage));
+
+            pool.Add(new UpgradeOption("Mana Surge", "Skill cooldown reduced by 18%.", UpgradeType.ManaSurge, UpgradeCategory.Mage));
+        }
+        else
+        {
+            if (stats == null || !stats.ProjectilePierce)
+                pool.Add(new UpgradeOption("Sword Wave Pierce", "Sword waves pierce through enemies.", UpgradeType.SwordWavePierce, UpgradeCategory.Rare));
+
+            pool.Add(new UpgradeOption("Sword Wave Bigger", "Sword waves become larger.", UpgradeType.SwordWaveBigger, UpgradeCategory.Warrior));
+            pool.Add(new UpgradeOption("Dash Slash Heal", "Recover HP when Dash Slash hits enemies.", UpgradeType.DashSlashHeal, UpgradeCategory.Warrior));
+            pool.Add(new UpgradeOption("Dash Slash Cooldown", "Dash Slash cooldown reduced.", UpgradeType.DashSlashCooldown, UpgradeCategory.Warrior));
+
+            if (stats == null || !stats.DashEndExplosion)
+                pool.Add(new UpgradeOption("Earth Splitter", "Dash Slash ends with an explosion.", UpgradeType.EarthSplitter, UpgradeCategory.Warrior));
+
+            if (stats == null || stats.BattleFrenzyDuration <= 0f)
+                pool.Add(new UpgradeOption("Battle Frenzy", "After hitting with Dash Slash, attack faster for 2s.", UpgradeType.BattleFrenzy, UpgradeCategory.Warrior));
+        }
+
+        return pool;
     }
 }

@@ -24,6 +24,18 @@ public class CharacterStats
     public float DashDistance;
     public float DashDuration;
 
+    public int AttackProjectileCount = 1;
+    public float AttackSpreadAngle = 12f;
+    public float ProjectileScaleMultiplier = 1f;
+    public bool ProjectilePierce;
+    public float SkillRadiusBonus;
+    public float SkillDurationBonus;
+    public float SkillTickIntervalMultiplier = 1f;
+    public int DashHealOnHit;
+    public bool DashEndExplosion;
+    public float BattleFrenzyDuration;
+    public float RainSlowMultiplier = 1f;
+
     public Color BodyColor;
     public Color BulletColor;
 
